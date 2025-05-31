@@ -1,0 +1,116 @@
+{
+  "navbar": {
+    "brand": "Furniture Lab",
+    "navigation": {
+      "home": "Beranda",
+      "products": "Produk",
+      "categories": "Kategori",
+      "about": "Tentang Kami"
+    },
+    "userMenu": {
+      "profile": "Profile",
+      "orders": "Orders",
+      "signOut": "Sign out",
+      "login": "Login",
+      "register": "Register"
+    }
+  },
+  "banner": {
+    "hero": {
+      "title": "Transformasi Ruangan Anda dengan Furniture Premium Kami",
+      "description": "Temukan koleksi furniture premium kami yang dirancang untuk meningkatkan estetika dan kenyamanan rumah Anda.",
+      "cta": {
+        "shopNow": "Belanja Sekarang",
+        "browseCategories": "Jelajahi Kategori"
+      }
+    },
+    "features": {
+      "title": "Mengapa Memilih Kami",
+      "quality": {
+        "title": "Kualitas Terjamin",
+        "description": "Bahan premium dan keterangan ahli"
+      },
+      "delivery": {
+        "title": "Pengiriman Cepat",
+        "description": "Pengiriman cepat dan aman"
+      },
+      "payment": {
+        "title": "Pembayaran Aman",
+        "description": "Transaksi aman dan terenkripsi"
+      }
+    }
+  },
+  "productCard": {
+    "addToCart": "Tambah ke Keranjang"
+  },
+  "footer": {
+    "company": {
+      "description": "Transformasi ruangan Anda dengan koleksi furniture premium kami."
+    },
+    "quickLinks": {
+      "title": "Tautan Cepat",
+      "links": {
+        "products": "Produk",
+        "categories": "Kategori",
+        "about": "Tentang Kami",
+        "contact": "Kontak"
+      }
+    },
+    "customerService": {
+      "title": "Layanan Pelanggan",
+      "links": {
+        "faq": "FAQ",
+        "shipping": "Kebijakan Pengiriman",
+        "returns": "Pengembalian & Pengembalian",
+        "privacy": "Kebijakan Privasi"
+      }
+    },
+    "contact": {
+      "title": "Hubungi Kami",
+      "address": "Jl. Furniture No. 123, Jakarta",
+      "email": "info@furniturelab.com",
+      "phone": "+62 123 4567 890"
+    },
+    "copyright": "Furniture Lab. All rights reserved."
+  },
+  "products": {
+    "featured": [
+      {
+        "id": "1",
+        "name": "Modern Sofa Set",
+        "image": "/images/products/sofa-1.jpg",
+        "price": 4500000,
+        "description": "Elegant modern sofa set with premium fabric and comfortable cushions",
+        "rating": 4.5,
+        "reviewCount": 128
+      },
+      {
+        "id": "2",
+        "name": "Wooden Dining Table",
+        "image": "/images/products/table-1.jpg",
+        "price": 2800000,
+        "description": "Solid wood dining table with 6 chairs, perfect for family gatherings",
+        "rating": 4.8,
+        "reviewCount": 95
+      },
+      {
+        "id": "3",
+        "name": "Queen Size Bed",
+        "image": "/images/products/bed-1.jpg",
+        "price": 3500000,
+        "description": "Comfortable queen size bed with storage and premium mattress",
+        "rating": 4.7,
+        "reviewCount": 156
+      },
+      {
+        "id": "4",
+        "name": "Bookshelf",
+        "image": "/images/products/shelf-1.jpg",
+        "price": 1200000,
+        "description": "Modern bookshelf with adjustable shelves and ample storage",
+        "rating": 4.3,
+        "reviewCount": 82
+      }
+    ]
+  }
+}

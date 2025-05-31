@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "emailVerified" TIMESTAMP(3),
+ADD COLUMN     "image" TEXT,
+ADD COLUMN     "name" TEXT,
+ALTER COLUMN "nama" DROP NOT NULL,
+ALTER COLUMN "email" DROP NOT NULL,
+ALTER COLUMN "pw" DROP NOT NULL;

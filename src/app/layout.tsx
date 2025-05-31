@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import { Mona_Sans } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
 
-const mona_sans = Mona_Sans({
+const mona = Mona_Sans({
   subsets: ["latin"],
-  weight: ['300', '400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-mona-sans',
-  preload: true,
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "FURNITURE LAB",
-  description: "Furniture Lab is a furniture store that sells furniture",
+  title: "Furniture Lab - Premium Furniture Store",
+  description: "Transform your space with our premium furniture collection.",
 };
 
 export default function RootLayout({
@@ -21,9 +19,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={mona_sans.className}>
-      <body className="antialiased">
-        {children}
+    <html lang="en">
+      <body className={mona.className}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

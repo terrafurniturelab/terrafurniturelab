@@ -14,8 +14,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing email' }, { status: 400 });
   }
 
-  // Cari pending_user
-  const pending = await prisma.pending_user.findUnique({ where: { email } });
+  // Cari pendingUser
+  const pending = await prisma.pendingUser.findUnique({ where: { email } });
   if (!pending) {
     return NextResponse.json({ error: 'No pending registration for this email' }, { status: 400 });
   }
@@ -24,8 +24,8 @@ export async function POST(req: Request) {
   const token = generateToken();
   const expiredAt = new Date(Date.now() + 15 * 60 * 1000); // 15 menit
 
-  // Update pending_user
-  await prisma.pending_user.update({
+  // Update pendingUser
+  await prisma.pendingUser.update({
     where: { email },
     data: { token, expiredAt },
   });

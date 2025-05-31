@@ -9,8 +9,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
 
-  // Cari pending_user
-  const pending = await prisma.pending_user.findUnique({ where: { email } });
+  // Cari pendingUser
+  const pending = await prisma.pendingUser.findUnique({ where: { email } });
   if (!pending || pending.token !== token) {
     return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
   }
@@ -18,17 +18,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Token expired' }, { status: 400 });
   }
 
-  // Simpan ke tabel user
+  // Simpan ke tabel User
   await prisma.user.create({
     data: {
-      nama: pending.nama,
       email: pending.email,
-      pw: pending.pw,
+      password: pending.password,
+      name: pending.name,
     },
   });
 
-  // Hapus dari pending_user
-  await prisma.pending_user.delete({ where: { email } });
+  // Hapus dari pendingUser
+  await prisma.pendingUser.delete({ where: { email } });
 
   return NextResponse.json({ message: 'Registration successful' });
 } 

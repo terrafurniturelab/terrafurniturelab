@@ -1,103 +1,103 @@
-import Image from "next/image";
+'use client';
+
+import React from 'react';
+import Navbar from '@/components/Navbar';
+import Banner from '@/components/Banner';
+import ProductGrid from '@/components/ProductGrid';
+import Testimonial from '@/components/Testimonial';
+import Footer from '@/components/Footer';
+
+// Mock data for products
+const featuredProducts = [
+  {
+    id: '1',
+    name: 'Modern Sofa Set',
+    image: '/products/sofa-1.jpg',
+    price: 4500000,
+    description: 'Elegant and comfortable modern sofa set perfect for your living room.',
+    rating: 4.5,
+    reviewCount: 128
+  },
+  {
+    id: '2',
+    name: 'Wooden Dining Table',
+    image: '/products/table-1.jpg',
+    price: 2800000,
+    description: 'Solid wood dining table with six matching chairs.',
+    rating: 4.8,
+    reviewCount: 95
+  },
+  {
+    id: '3',
+    name: 'Queen Size Bed',
+    image: '/products/bed-1.jpg',
+    price: 3500000,
+    description: 'Comfortable queen size bed with premium mattress.',
+    rating: 4.7,
+    reviewCount: 156
+  },
+  {
+    id: '4',
+    name: 'Bookshelf',
+    image: '/products/shelf-1.jpg',
+    price: 1200000,
+    description: 'Spacious bookshelf with multiple compartments.',
+    rating: 4.3,
+    reviewCount: 82
+  },
+];
+
+// Mock data for testimonials
+const testimonials = [
+  {
+    name: 'Sarah Johnson',
+    role: 'Homeowner',
+    image: '/testimonials/user-1.jpg',
+    content: 'The quality of furniture is exceptional. I love how it transformed my living space!',
+  },
+  {
+    name: 'Michael Chen',
+    role: 'Interior Designer',
+    image: '/testimonials/user-2.jpg',
+    content: 'As a designer, I appreciate the attention to detail and craftsmanship in every piece.',
+  },
+  {
+    name: 'Emma Davis',
+    role: 'Customer',
+    image: '/testimonials/user-3.jpg',
+    content: 'Great customer service and fast delivery. Will definitely shop here again!',
+  },
+];
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="min-h-screen">
+      <Navbar />
+      <Banner />
+      {/* Featured Products Section */}
+      <ProductGrid title="Produk Terbaru" products={featuredProducts} />
+      
+      {/* Testimonials Section */}
+      <section className="bg-gray-50 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-coklat text-center mb-8">
+            Apa Kata Mereka
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, index) => (
+              <Testimonial
+                key={index}
+                name={testimonial.name}
+                role={testimonial.role}
+                image={testimonial.image}
+                content={testimonial.content}
+              />
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </section>
+
+      <Footer />
+    </main>
   );
 }

@@ -1,49 +1,129 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
 import CardAuth from "@/components/CardAuth";
 import GoogleButton from "@/components/GoogleButton";
-import Modal from "@/components/Modal";
 import Link from "next/link";
+import ModalCenter from "@/components/ModalCenter";
+import LoadingScreen from "@/components/LoadingScreen";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMsg, setModalMsg] = useState("");
+  const [modalStatus, setModalStatus] = useState<'error' | 'success' | 'info'>("info");
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalDesc, setModalDesc] = useState("");
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Dummy handleLogin, ganti dengan logic backend
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // ...login logic...
-    // Jika gagal:
-    setModalMsg("Akun tidak ditemukan atau password salah.");
-    setModalOpen(true);
+    setIsLoading(true);
+
+    try {
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setModalTitle("Login gagal");
+        setModalDesc(result.error);
+        setModalStatus('error');
+        setModalOpen(true);
+      } else {
+        setModalTitle("Login sukses");
+        setModalDesc("Selamat datang kembali!");
+        setModalStatus('success');
+        setModalOpen(true);
+        router.push('/'); // Redirect to home page after successful login
+      }
+    } catch (error) {
+      setModalTitle("Login gagal");
+      setModalDesc("Terjadi kesalahan saat login");
+      setModalStatus('error');
+      setModalOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <CardAuth title="Selamat Datang" subtitle="Silahkan masuk untuk melanjutkan pembelian">
-      <form className="space-y-4" onSubmit={handleLogin}>
-        <div>
-          <label className="block text-sm font-medium text-[#472D2D]">Email</label>
-          <input type="email" className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" placeholder="Masukkan Email" required />
+    <>
+      <LoadingScreen isLoading={isLoading} />
+      <CardAuth title="Selamat Datang" subtitle="Silahkan masuk untuk melanjutkan pembelian">
+        <form className="space-y-4" onSubmit={handleLogin}>
+          <div>
+            <label className="block text-sm font-medium text-[#472D2D]">Email</label>
+            <input 
+              type="email" 
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+              placeholder="Masukkan Email" 
+              required 
+              disabled={isLoading}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#472D2D]">Kata Sandi</label>
+            <input 
+              type="password" 
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+              placeholder="Masukkan Kata Sandi" 
+              required 
+              disabled={isLoading}
+            />
+            <div className="text-right mt-1">
+              <Link href="/forgot-password" className="text-xs text-coklatmuda hover:text-[#553939]">
+                Lupa kata sandi?
+              </Link>
+            </div>
+          </div>
+          <button 
+            type="submit" 
+            className="mt-4 w-full py-2 bg-coklat text-white rounded-lg font-semibold bg-[#553939] hover:bg-[#3f2a2a] transition cursor-pointer disabled:opacity-50"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Memuat...' : 'Masuk'}
+          </button>
+        </form>
+        <div className="flex items-center my-4">
+          <div className="flex-grow h-px bg-gray-200" />
+          <span className="mx-2 text-gray-400 text-xs">Atau</span>
+          <div className="flex-grow h-px bg-gray-200" />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-[#472D2D]">Kata Sandi</label>
-          <input type="password" className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" placeholder="Masukkan Kata Sandi" required />
-        </div>
-        <button type="submit" className="mt-4 w-full py-2 bg-coklat text-white rounded-lg font-semibold bg-[#553939] hover:bg-[#3f2a2a] transition cursor-pointer">Masuk</button>
-      </form>
-      <div className="flex items-center my-4">
-        <div className="flex-grow h-px bg-gray-200" />
-        <span className="mx-2 text-gray-400 text-xs">Atau</span>
-        <div className="flex-grow h-px bg-gray-200" />
-      </div>
-      <GoogleButton>Masuk dengan Akun Google</GoogleButton>
-      <p className="text-center text-xs text-gray-400 mt-6">
-        Belum punya akun? <Link href="/register" className="text-coklatmuda underline hover:text-[#553939]">Daftar</Link>
-      </p>
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Login Gagal">
-        <p>{modalMsg}</p>
-      </Modal>
-    </CardAuth>
+        <GoogleButton>Masuk dengan Akun Google</GoogleButton>
+        <p className="text-center text-xs text-gray-400 mt-6">
+          Belum punya akun? <Link href="/register" className="text-coklatmuda underline hover:text-[#553939]">Daftar</Link>
+        </p>
+      </CardAuth>
+      <ModalCenter
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        status={modalStatus}
+        title={modalTitle}
+        description={modalDesc}
+        okText="OK"
+      />
+    </>
   );
 }
