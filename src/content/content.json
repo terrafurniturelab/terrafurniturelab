@@ -111,6 +111,10 @@
         "rating": 4.3,
         "reviewCount": 82
       }
-    ]
+    ],
+    "title": "Produk Kami",
+    "description": "Jelajahi koleksi furniture premium kami yang dirancang untuk meningkatkan estetika dan kenyamanan rumah Anda.",
+    "searchPlaceholder": "Cari produk...",
+    "noResults": "Tidak ada produk yang sesuai dengan pencarian Anda."
   }
 }

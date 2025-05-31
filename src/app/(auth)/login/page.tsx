@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CardAuth from "@/components/CardAuth";
 import GoogleButton from "@/components/GoogleButton";
 import Link from "next/link";
 import ModalCenter from "@/components/ModalCenter";
 import LoadingScreen from "@/components/LoadingScreen";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [modalStatus, setModalStatus] = useState<'error' | 'success' | 'info'>("info");
   const [modalTitle, setModalTitle] = useState("");
@@ -20,6 +21,16 @@ export default function Login() {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error === 'OAuthAccountNotLinked') {
+      setModalTitle("Login gagal");
+      setModalDesc("Akun Google Anda belum terdaftar. Silahkan daftar terlebih dahulu.");
+      setModalStatus('error');
+      setModalOpen(true);
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,7 +48,7 @@ export default function Login() {
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
-        redirect: false,
+        redirect: false
       });
 
       if (result?.error) {
@@ -45,16 +56,20 @@ export default function Login() {
         setModalDesc(result.error);
         setModalStatus('error');
         setModalOpen(true);
-      } else {
-        setModalTitle("Login sukses");
-        setModalDesc("Selamat datang kembali!");
-        setModalStatus('success');
-        setModalOpen(true);
-        router.push('/'); // Redirect to home page after successful login
+        return;
       }
+
+      setModalTitle("Login berhasil");
+      setModalDesc("Selamat datang kembali!");
+      setModalStatus('success');
+      setModalOpen(true);
+
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
     } catch (error) {
       setModalTitle("Login gagal");
-      setModalDesc("Terjadi kesalahan saat login");
+      setModalDesc(error instanceof Error ? error.message : 'Terjadi kesalahan saat login');
       setModalStatus('error');
       setModalOpen(true);
     } finally {
@@ -69,38 +84,38 @@ export default function Login() {
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block text-sm font-medium text-[#472D2D]">Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
-              placeholder="Masukkan Email" 
-              required 
+              placeholder="Masukkan email" 
+              required
               disabled={isLoading}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#472D2D]">Kata Sandi</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
-              placeholder="Masukkan Kata Sandi" 
-              required 
+              placeholder="Masukkan kata sandi" 
+              required
               disabled={isLoading}
             />
-            <div className="text-right mt-1">
-              <Link href="/forgot-password" className="text-xs text-coklatmuda hover:text-[#553939]">
-                Lupa kata sandi?
-              </Link>
-            </div>
           </div>
-          <button 
-            type="submit" 
-            className="mt-4 w-full py-2 bg-coklat text-white rounded-lg font-semibold bg-[#553939] hover:bg-[#3f2a2a] transition cursor-pointer disabled:opacity-50"
+          <div className="flex justify-end">
+            <Link href="/forgot-password" className="text-sm text-coklatmuda hover:text-[#553939]">
+              Lupa kata sandi?
+            </Link>
+          </div>
+          <button
+            type="submit"
+            className="w-full py-2 bg-coklat text-white rounded-lg font-semibold bg-[#553939] hover:bg-[#3f2a2a] transition cursor-pointer disabled:opacity-50"
             disabled={isLoading}
           >
             {isLoading ? 'Memuat...' : 'Masuk'}

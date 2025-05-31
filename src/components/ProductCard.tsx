@@ -28,7 +28,7 @@ export default function ProductCard({ id, name, image, price, description, ratin
 
   return (
     <div className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
-      <div className="relative h-64 w-full overflow-hidden">
+      <div className="relative h-32 sm:h-64 w-full overflow-hidden">
         <Link href={`/products/${id}`}>
           <Image
             src={image}
@@ -38,9 +38,9 @@ export default function ProductCard({ id, name, image, price, description, ratin
           />
         </Link>
       </div>
-      <div className="p-6 space-y-4">
-        <Link href={`/products/${id}`} className="block space-y-2">
-          <h3 className="text-xl font-semibold text-gray-900 hover:text-coklat-tua transition-colors">
+      <div className="p-3 sm:p-6 space-y-2 sm:space-y-4">
+        <Link href={`/products/${id}`} className="block space-y-1 sm:space-y-2">
+          <h3 className="text-base sm:text-xl font-semibold text-gray-900 hover:text-coklat-tua transition-colors line-clamp-1">
             {name}
           </h3>
           <div className="flex items-center space-x-1">
@@ -48,7 +48,7 @@ export default function ProductCard({ id, name, image, price, description, ratin
               {[...Array(5)].map((_, index) => (
                 <StarIcon
                   key={index}
-                  className={`h-5 w-5 ${
+                  className={`h-3 w-3 sm:h-5 sm:w-5 ${
                     index < Math.floor(rating)
                       ? 'text-yellow-400'
                       : 'text-gray-300'
@@ -56,33 +56,35 @@ export default function ProductCard({ id, name, image, price, description, ratin
                 />
               ))}
             </div>
-            <span className="text-sm text-gray-600">
+            <span className="text-xs sm:text-sm text-gray-600">
               ({reviewCount})
             </span>
           </div>
-          <p className="text-gray-600 text-sm line-clamp-2">
+          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
             {description}
           </p>
         </Link>
-        <div className="pt-2">
-          <div className="flex justify-between items-center">
-            <span className="text-xl font-bold text-coklat-tua">
+        <div className="pt-1 sm:pt-2">
+          <div className="mb-4 sm:mb-4 justify-between sm:items-center">
+            <span className="text-lg sm:text-xl font-bold text-[#472D2D]">
               {formattedPrice}
             </span>
-            <div className="flex gap-3">
-              <button
-                onClick={() => addToCart({ id, name, image, price, quantity: 1 })}
-                className="bg-coklat-tua text-white px-4 py-2 rounded-md hover:bg-coklat-muda transition-colors duration-300 text-sm font-medium"
-              >
-                {content.productCard.addToCart}
-              </button>
-              <Link
-                href={`/checkout?productId=${id}`}
-                className="bg-white text-coklat-tua border border-coklat-tua px-4 py-2 rounded-md hover:bg-coklat-tua hover:text-white transition-colors duration-300 text-sm font-medium"
-              >
-                Pesan
-              </Link>
-            </div>
+          </div>
+          <div className="flex gap-2 sm:gap-3">
+            <button
+              onClick={() => addToCart({ id, name, image, price, quantity: 1 })}
+              className="cursor-pointer flex items-center justify-center bg-[#472D2D] hover:bg-[#382525] text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-coklat-muda transition-colors duration-300 text-xs sm:text-sm font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </button>
+            <Link
+              href={`/checkout?productId=${id}`}
+              className="w-full text-center bg-white text-[#472D2D] border border-[#472D2D] px-2 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-[#472D2D] hover:text-white transition-colors duration-300 text-xs sm:text-sm font-medium"
+            >
+              Buat Pesanan
+            </Link>
           </div>
         </div>
       </div>

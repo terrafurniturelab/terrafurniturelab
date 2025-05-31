@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from "react";
+import { signIn } from "next-auth/react";
 import CardAuth from "@/components/CardAuth";
-import GoogleButton from "@/components/GoogleButton";
+import GoogleRegisterButton from "@/components/GoogleRegisterButton";
 import Link from "next/link";
 import ModalCenter from "@/components/ModalCenter";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -15,7 +16,7 @@ export default function Register() {
   const [modalTitle, setModalTitle] = useState("");
   const [modalDesc, setModalDesc] = useState("");
   const [formData, setFormData] = useState({
-    username: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -33,14 +34,13 @@ export default function Register() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setModalTitle("Registrasi gagal");
-      setModalDesc("Password dan konfirmasi password tidak cocok");
+      setModalDesc("Password dan konfirmasi password tidak sesuai");
       setModalStatus('error');
       setModalOpen(true);
       setIsLoading(false);
@@ -54,7 +54,7 @@ export default function Register() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.username,
+          name: formData.name,
           email: formData.email,
           password: formData.password,
         }),
@@ -63,23 +63,18 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        setModalTitle("Registrasi gagal");
-        setModalDesc(data.error || "Terjadi kesalahan saat registrasi");
-        setModalStatus('error');
-        setModalOpen(true);
-        return;
+        throw new Error(data.error || 'Terjadi kesalahan saat mendaftar');
       }
 
       setModalTitle("Registrasi berhasil");
-      setModalDesc("Silahkan cek email Anda untuk verifikasi");
+      setModalDesc("Silahkan cek email Anda untuk verifikasi akun");
       setModalStatus('success');
       setModalOpen(true);
       setShowTokenInput(true);
       setRegisteredEmail(formData.email);
     } catch (error) {
-      console.error('Registration error:', error);
       setModalTitle("Registrasi gagal");
-      setModalDesc("Terjadi kesalahan saat registrasi");
+      setModalDesc(error instanceof Error ? error.message : 'Terjadi kesalahan saat mendaftar');
       setModalStatus('error');
       setModalOpen(true);
     } finally {
@@ -106,15 +101,11 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        setModalTitle("Verifikasi gagal");
-        setModalDesc(data.error || "Token tidak valid atau sudah kadaluarsa");
-        setModalStatus('error');
-        setModalOpen(true);
-        return;
+        throw new Error(data.error || 'Token tidak valid atau sudah kadaluarsa');
       }
 
-      setModalTitle("Verifikasi berhasil");
-      setModalDesc("Akun Anda telah terverifikasi. Silahkan login.");
+      setModalTitle("Registrasi berhasil");
+      setModalDesc("Selamat datang! Akun Anda telah berhasil dibuat.");
       setModalStatus('success');
       setModalOpen(true);
       
@@ -122,9 +113,8 @@ export default function Register() {
         router.push('/');
       }, 2000);
     } catch (error) {
-      console.error('Verification error:', error);
       setModalTitle("Verifikasi gagal");
-      setModalDesc("Terjadi kesalahan saat verifikasi");
+      setModalDesc(error instanceof Error ? error.message : 'Terjadi kesalahan saat verifikasi');
       setModalStatus('error');
       setModalOpen(true);
     } finally {
@@ -149,11 +139,7 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        setModalTitle("Gagal mengirim ulang token");
-        setModalDesc(data.error || "Gagal mengirim ulang token");
-        setModalStatus('error');
-        setModalOpen(true);
-        return;
+        throw new Error(data.error || 'Gagal mengirim ulang token');
       }
 
       setModalTitle("Token terkirim");
@@ -161,9 +147,8 @@ export default function Register() {
       setModalStatus('success');
       setModalOpen(true);
     } catch (error) {
-      console.error('Resend token error:', error);
       setModalTitle("Gagal mengirim ulang token");
-      setModalDesc("Terjadi kesalahan saat mengirim ulang token");
+      setModalDesc(error instanceof Error ? error.message : 'Terjadi kesalahan saat mengirim ulang token');
       setModalStatus('error');
       setModalOpen(true);
     } finally {
@@ -171,21 +156,46 @@ export default function Register() {
     }
   };
 
+  const handleGoogleError = (message: string) => {
+    setModalTitle("Registrasi gagal");
+    setModalDesc(message);
+    setModalStatus('error');
+    setModalOpen(true);
+  };
+
+  const handleGoogleSuccess = () => {
+    setModalTitle("Registrasi berhasil");
+    setModalDesc("Selamat datang! Akun Anda telah berhasil dibuat.");
+    setModalStatus('success');
+    setModalOpen(true);
+
+    setTimeout(async () => {
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false
+      });
+      if (result?.ok) {
+        router.push('/');
+      }
+    }, 2000);
+  };
+
   return (
     <>
       <LoadingScreen isLoading={isLoading} />
-      <CardAuth title="Daftar" subtitle="Buat akun baru untuk melanjutkan">
+      <CardAuth title="Daftar" subtitle="Buat akun baru untuk mulai berbelanja">
         {!showTokenInput ? (
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleRegister}>
             <div>
-              <label className="block text-sm font-medium text-[#472D2D]">Nama</label>
+              <label className="block text-sm font-medium text-[#472D2D]">Nama Lengkap</label>
               <input
                 type="text"
-                name="username"
-                value={formData.username}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda"
-                placeholder="Masukkan nama"
+                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                placeholder="Masukkan nama lengkap" 
                 required
                 disabled={isLoading}
               />
@@ -197,8 +207,8 @@ export default function Register() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda"
-                placeholder="Masukkan email"
+                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                placeholder="Masukkan email" 
                 required
                 disabled={isLoading}
               />
@@ -210,10 +220,9 @@ export default function Register() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda"
-                placeholder="Masukkan kata sandi"
+                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                placeholder="Masukkan kata sandi" 
                 required
-                minLength={6}
                 disabled={isLoading}
               />
             </div>
@@ -224,10 +233,9 @@ export default function Register() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda"
-                placeholder="Konfirmasi kata sandi"
+                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                placeholder="Masukkan ulang kata sandi" 
                 required
-                minLength={6}
                 disabled={isLoading}
               />
             </div>
@@ -281,19 +289,19 @@ export default function Register() {
           <span className="mx-2 text-gray-400 text-xs">Atau</span>
           <div className="flex-grow h-px bg-gray-200" />
         </div>
-        <GoogleButton>Daftar dengan Akun Google</GoogleButton>
+        <GoogleRegisterButton>Daftar dengan Akun Google</GoogleRegisterButton>
         <p className="text-center text-xs text-gray-400 mt-6">
           Sudah punya akun? <Link href="/login" className="text-coklatmuda underline hover:text-[#553939]">Masuk</Link>
         </p>
-        <ModalCenter
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          status={modalStatus}
-          title={modalTitle}
-          description={modalDesc}
-          okText="OK"
-        />
       </CardAuth>
+      <ModalCenter
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        status={modalStatus}
+        title={modalTitle}
+        description={modalDesc}
+        okText="OK"
+      />
     </>
   );
 }

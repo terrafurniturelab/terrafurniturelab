@@ -3,37 +3,57 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ModalCenter from "./ModalCenter";
+import { useRouter } from "next/navigation";
 
-interface GoogleButtonProps {
+interface GoogleRegisterButtonProps {
   children: React.ReactNode;
 }
 
-export default function GoogleButton({ children }: GoogleButtonProps) {
+interface SignInResponse {
+  error?: string;
+  ok?: boolean;
+  status?: number;
+  url?: string;
+}
+
+export default function GoogleRegisterButton({ children }: GoogleRegisterButtonProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalStatus, setModalStatus] = useState<'error' | 'success' | 'info'>("info");
   const [modalTitle, setModalTitle] = useState("");
   const [modalDesc, setModalDesc] = useState("");
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleRegister = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      await signIn('google', { callbackUrl: '/' });
-      setIsLoading(false);
+      const result = await signIn('google', { 
+        callbackUrl: '/',
+        redirect: false
+      }) as SignInResponse;
+
+      if (result?.error) {
+        setModalTitle("Registrasi gagal");
+        setModalDesc("Terjadi kesalahan saat registrasi dengan Google");
+        setModalStatus('error');
+        setModalOpen(true);
+        return;
+      }
+
     } catch (error) {
+      setModalTitle("Registrasi gagal");
+      setModalDesc("Terjadi kesalahan saat registrasi dengan Google");
       setModalStatus('error');
-      setModalTitle('Gagal!');
-      setModalDesc('Gagal membuat akun. Silakan coba lagi.');
       setModalOpen(true);
+    } finally {
       setIsLoading(false);
-      console.error('Google sign-in failed:', error);
     }
   };
 
   return (
     <>
       <button
-        onClick={handleGoogleLogin}
+        onClick={handleGoogleRegister}
         disabled={isLoading}
         className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50 transition disabled:opacity-50"
       >
@@ -67,4 +87,4 @@ export default function GoogleButton({ children }: GoogleButtonProps) {
       />
     </>
   );
-}
+} 

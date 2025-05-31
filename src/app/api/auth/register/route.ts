@@ -9,69 +9,46 @@ function generateToken() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { username, email, password } = await req.json();
+    const body = await request.json();
+    const { name, email, password } = body;
     
-    // Validate input
-    if (!username || !email || !password) {
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { error: 'Semua field harus diisi' },
+        { error: "Nama, email, dan password diperlukan" },
         { status: 400 }
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Format email tidak valid' },
-        { status: 400 }
-      );
-    }
-
-    // Validate password length
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password minimal 6 karakter' },
-        { status: 400 }
-      );
-    }
-
-    // Check if email already exists in User table
+    // Cek apakah email sudah terdaftar
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'Email sudah terdaftar' },
+        { error: "Email sudah terdaftar" },
         { status: 400 }
       );
     }
 
-    // Check if email exists in pendingUser table
-    const existingPendingUser = await prisma.pendingUser.findUnique({
-      where: { email }
-    });
-
-    // Generate token and hash password
+    // Generate token dan hash password
     const token = generateToken();
-    const expiredAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
     const hashedPassword = await bcrypt.hash(password, 10);
+    const expiredAt = new Date(Date.now() + 15 * 60 * 1000); // 15 menit
 
-    try {
-      // Save to pendingUser
-      await prisma.pendingUser.upsert({
+    // Simpan ke pendingUser
+    await prisma.pendingUser.upsert({
         where: { email },
         update: {
-          name: username,
+        name,
           password: hashedPassword,
           token,
           expiredAt
         },
         create: {
-          name: username,
+        name,
           email,
           password: hashedPassword,
           token,
@@ -79,7 +56,7 @@ export async function POST(req: Request) {
         }
       });
 
-      // Send verification email
+    // Kirim email verifikasi
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: Number(process.env.SMTP_PORT),
@@ -106,28 +83,9 @@ export async function POST(req: Request) {
         message: 'Kode verifikasi telah dikirim ke email Anda'
       });
     } catch (error) {
-      console.error('Database or email error:', error);
-      // Log more details about the error
-      if (error instanceof Error) {
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-      }
-      return NextResponse.json(
-        { error: 'Terjadi kesalahan saat menyimpan data atau mengirim email' },
-        { status: 500 }
-      );
-    }
-  } catch (error) {
-    console.error('Registration error:', error);
-    // Log more details about the error
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
+    console.error("Registration error:", error);
     return NextResponse.json(
-      { error: 'Terjadi kesalahan saat registrasi' },
+      { error: "Terjadi kesalahan saat mendaftar" },
       { status: 500 }
     );
   }
