@@ -14,6 +14,7 @@ import {
   ArrowRightOnRectangleIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 const navigation = [
   { name: 'Dasbor', href: '/admin/dashboard', icon: HomeIcon },
@@ -54,9 +55,12 @@ export default function AdminSidebar() {
     <div className={`bg-[#472D2D] text-white h-screen ${isSidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 fixed left-0 top-0`}>
       <div className="p-4">
         <div className="flex items-center justify-between mb-8">
-          <h1 className={`font-bold text-xl ${!isSidebarOpen && 'hidden'}`}>
-            Admin Panel
-          </h1>
+          <div className="flex flex-col items-center space-y-2">
+            <Image src="/logo-w.png" alt="Logo" width={170} height={170} className={`border-b-2 border-white ${!isSidebarOpen && 'hidden'}`} />
+            <h1 className={`font-bold text-xl ${!isSidebarOpen && 'hidden'}`}>
+              Admin Panel
+            </h1>
+          </div>
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="p-2 rounded-lg hover:bg-[#382525]"

@@ -17,7 +17,7 @@ export async function GET() {
     // Get all required statistics in parallel
     const [
       totalCategories,
-      totalProducts,
+      totalProductTypes,
       totalUsers,
       totalOrders,
       totalDelivered,
@@ -101,8 +101,12 @@ export async function GET() {
 
     return NextResponse.json({
       totalCategories,
-      totalProductTypes: totalCategories, // Using categories as product types
-      totalProducts,
+      totalProductTypes, // Using categories as product types
+      totalProducts: await prisma.product.aggregate({
+        _sum: {
+          stock: true
+        }
+      }).then(result => result._sum.stock || 0),
       totalUsers,
       totalOrders,
       totalDelivered,
