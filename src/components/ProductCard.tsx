@@ -5,43 +5,50 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
 import { StarIcon } from '@heroicons/react/24/solid';
-import content from '@/content/content.json';
 
 interface Product {
   id: string;
   name: string;
-  image: string;
-  price: number;
+  images: string[];
   description: string;
+  stock: number;
+  price: number;
   rating: number;
   reviewCount: number;
+  categoryId: string;
+  category: { id: string; name: string };
+  createdAt: string;
+  updatedAt: string;
 }
 
-export default function ProductCard({ id, name, image, price, description, rating, reviewCount }: Product) {
+export default function ProductCard(product: Product) {
   const { addToCart } = useCart();
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(product.price);
 
   return (
-    <div className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
+    <div className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
       <div className="relative h-32 sm:h-64 w-full overflow-hidden">
-        <Link href={`/products/${id}`}>
+        <Link href={`/products/${product.id}`}>
           <Image
-            src={image}
-            alt={name}
+            src={product.images[0] || '/placeholder.png'}
+            alt={product.name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </Link>
       </div>
-      <div className="p-3 sm:p-6 space-y-2 sm:space-y-4">
-        <Link href={`/products/${id}`} className="block space-y-1 sm:space-y-2">
+      <div className="p-3 sm:p-6 flex flex-col flex-grow">
+        <Link href={`/products/${product.id}`} className="block space-y-1 sm:space-y-2">
+          <span className="inline-block bg-[#472D2D] text-white text-[10px] sm:text-xs px-2 py-1 rounded-md">
+            {product.category?.name}
+          </span>
           <h3 className="text-base sm:text-xl font-semibold text-gray-900 hover:text-coklat-tua transition-colors line-clamp-1">
-            {name}
+            {product.name}
           </h3>
           <div className="flex items-center space-x-1">
             <div className="flex items-center">
@@ -49,7 +56,7 @@ export default function ProductCard({ id, name, image, price, description, ratin
                 <StarIcon
                   key={index}
                   className={`h-3 w-3 sm:h-5 sm:w-5 ${
-                    index < Math.floor(rating)
+                    index < Math.floor(product.rating)
                       ? 'text-yellow-400'
                       : 'text-gray-300'
                   }`}
@@ -57,22 +64,22 @@ export default function ProductCard({ id, name, image, price, description, ratin
               ))}
             </div>
             <span className="text-xs sm:text-sm text-gray-600">
-              ({reviewCount})
+              ({product.reviewCount})
             </span>
           </div>
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
-            {description}
+            {product.description}
           </p>
         </Link>
-        <div className="pt-1 sm:pt-2">
-          <div className="mb-4 sm:mb-4 justify-between sm:items-center">
+        <div className="mt-auto pt-4">
+          <div className="mb-4 sm:mb-4">
             <span className="text-lg sm:text-xl font-bold text-[#472D2D]">
               {formattedPrice}
             </span>
           </div>
           <div className="flex gap-2 sm:gap-3">
             <button
-              onClick={() => addToCart({ id, name, image, price, quantity: 1 })}
+              onClick={() => addToCart({ id: product.id, name: product.name, image: product.images[0] || '/placeholder.png', price: product.price, quantity: 1 })}
               className="cursor-pointer flex items-center justify-center bg-[#472D2D] hover:bg-[#382525] text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-coklat-muda transition-colors duration-300 text-xs sm:text-sm font-medium"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,8 +87,8 @@ export default function ProductCard({ id, name, image, price, description, ratin
               </svg>
             </button>
             <Link
-              href={`/checkout?productId=${id}`}
-              className="w-full text-center bg-white text-[#472D2D] border border-[#472D2D] px-2 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-[#472D2D] hover:text-white transition-colors duration-300 text-xs sm:text-sm font-medium"
+              href={`/checkout?productId=${product.id}`}
+              className="w-full text-center bg-white text-[#472D2D] border border-[#472D2D] px-2 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-[#472D2D] hover:text-white transition-colors duration-300 text-[10px] sm:text-sm font-medium"
             >
               Buat Pesanan
             </Link>

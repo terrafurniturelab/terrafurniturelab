@@ -18,22 +18,16 @@ export default function Banner() {
             <p className="text-lg text-[#d1bebe]">
               {content.banner.hero.description}
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 justify-center sm:justify-start">
               <Link
                 href="/products"
-                className="bg-white hover:bg-[#e9e9e9] text-[#472D2D] font-bold px-6 py-3 rounded-md hover:bg-coklat-muda transition-colors"
+                className="cursor-pointer bg-white hover:bg-[#e9e9e9] text-[#472D2D] font-bold px-3 sm:px-6 py-3 rounded-md text-sm sm:text-lg transition-colors"
               >
-                {content.banner.hero.cta.shopNow}
-              </Link>
-              <Link
-                href="/categories"
-                className="border border-white text-white font-bold px-6 py-3 rounded-md hover:bg-white hover:text-[#472D2D] transition-colors duration-400"
-              >
-                {content.banner.hero.cta.browseCategories}
+                {content.banner.hero.cta.shopNow}<span className="text-sm sm:text-2xl ml-4">&rarr;</span>
               </Link>
             </div>
           </div>
-          <div className="relative h-[400px]">
+          <div className="relative sm:h-[400px] h-[250px]">
             <Image
               src="/banner-image.jpg"
               alt={content.banner.hero.title}

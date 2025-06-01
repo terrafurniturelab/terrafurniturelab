@@ -4,14 +4,24 @@ import React from 'react';
 import ProductCard from './ProductCard';
 import Link from 'next/link';
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface Product {
   id: string;
   name: string;
-  image: string;
-  price: number;
+  images: string[];
   description: string;
+  stock: number;
+  price: number;
   rating: number;
   reviewCount: number;
+  categoryId: string;
+  category: Category;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ProductGridProps {

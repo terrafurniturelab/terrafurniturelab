@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
@@ -7,46 +5,23 @@ import ProductGrid from '@/components/ProductGrid';
 import Testimonial from '@/components/Testimonial';
 import Footer from '@/components/Footer';
 
-// Mock data for products
-const featuredProducts = [
-  {
-    id: '1',
-    name: 'Modern Sofa Set',
-    image: '/products/sofa-1.jpg',
-    price: 4500000,
-    description: 'Elegant and comfortable modern sofa set perfect for your living room.',
-    rating: 4.5,
-    reviewCount: 128
-  },
-  {
-    id: '2',
-    name: 'Wooden Dining Table',
-    image: '/products/table-1.jpg',
-    price: 2800000,
-    description: 'Solid wood dining table with six matching chairs.',
-    rating: 4.8,
-    reviewCount: 95
-  },
-  {
-    id: '3',
-    name: 'Queen Size Bed',
-    image: '/products/bed-1.jpg',
-    price: 3500000,
-    description: 'Comfortable queen size bed with premium mattress.',
-    rating: 4.7,
-    reviewCount: 156
-  },
-  {
-    id: '4',
-    name: 'Bookshelf',
-    image: '/products/shelf-1.jpg',
-    price: 1200000,
-    description: 'Spacious bookshelf with multiple compartments.',
-    rating: 4.3,
-    reviewCount: 82
-  },
-];
-
+async function getFeaturedProducts() {
+  try {
+    // Use absolute URL for server-side fetch
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/products?limit=6`, { 
+      cache: 'no-store' 
+    });
+    if (!res.ok) {
+      throw new Error('Failed to fetch products');
+    }
+    const products = await res.json();
+    return Array.isArray(products) ? products.slice(0, 6) : [];
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    return [];
+  }
+}
 // Mock data for testimonials
 const testimonials = [
   {
@@ -69,7 +44,8 @@ const testimonials = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const featuredProducts = await getFeaturedProducts();
   return (
     <main className="min-h-screen">
       <Navbar />

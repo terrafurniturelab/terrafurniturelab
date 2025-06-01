@@ -105,25 +105,6 @@ export default function Navbar() {
               )}
             </Link>
             <Link 
-              href="/categories" 
-              className={`relative transition-colors duration-300 ${
-                isScrolled 
-                  ? isActive('/categories') 
-                    ? 'text-[#472D2D] font-bold border-b-2 border-[#472D2D]' 
-                    : 'text-gray-700 hover:text-[#472D2D]'
-                  : isActive('/categories')
-                    ? 'text-white font-bold border-b-2 border-white'
-                    : 'text-white'
-              }`}
-            >
-              {content.navbar.navigation.categories}
-              {isActive('/categories') && (
-                <span className={`absolute -bottom-1 left-0 w-full h-0.5 transition-colors duration-300 ${
-                  isScrolled ? 'bg-coklat-tua' : 'bg-white'
-                }`} />
-              )}
-            </Link>
-            <Link 
               href="/about" 
               className={`relative transition-colors duration-300 ${
                 isScrolled 

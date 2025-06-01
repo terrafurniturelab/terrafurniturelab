@@ -20,8 +20,7 @@
       "title": "Transformasi Ruangan Anda dengan Furniture Premium Kami",
       "description": "Temukan koleksi furniture premium kami yang dirancang untuk meningkatkan estetika dan kenyamanan rumah Anda.",
       "cta": {
-        "shopNow": "Belanja Sekarang",
-        "browseCategories": "Jelajahi Kategori"
+        "shopNow": "Belanja Sekarang "
       }
     },
     "features": {
@@ -74,44 +73,6 @@
     "copyright": "Furniture Lab. All rights reserved."
   },
   "products": {
-    "featured": [
-      {
-        "id": "1",
-        "name": "Modern Sofa Set",
-        "image": "/images/products/sofa-1.jpg",
-        "price": 4500000,
-        "description": "Elegant modern sofa set with premium fabric and comfortable cushions",
-        "rating": 4.5,
-        "reviewCount": 128
-      },
-      {
-        "id": "2",
-        "name": "Wooden Dining Table",
-        "image": "/images/products/table-1.jpg",
-        "price": 2800000,
-        "description": "Solid wood dining table with 6 chairs, perfect for family gatherings",
-        "rating": 4.8,
-        "reviewCount": 95
-      },
-      {
-        "id": "3",
-        "name": "Queen Size Bed",
-        "image": "/images/products/bed-1.jpg",
-        "price": 3500000,
-        "description": "Comfortable queen size bed with storage and premium mattress",
-        "rating": 4.7,
-        "reviewCount": 156
-      },
-      {
-        "id": "4",
-        "name": "Bookshelf",
-        "image": "/images/products/shelf-1.jpg",
-        "price": 1200000,
-        "description": "Modern bookshelf with adjustable shelves and ample storage",
-        "rating": 4.3,
-        "reviewCount": 82
-      }
-    ],
     "title": "Produk Kami",
     "description": "Jelajahi koleksi furniture premium kami yang dirancang untuk meningkatkan estetika dan kenyamanan rumah Anda.",
     "searchPlaceholder": "Cari produk...",

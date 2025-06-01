@@ -100,7 +100,7 @@ model Category {
 model Product {
   id          String    @id @default(cuid())
   name        String
-  image       String
+  images      String[]
   description String    @db.Text
   stock       Int
   price       Int

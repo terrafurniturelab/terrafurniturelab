@@ -8,12 +8,12 @@ interface LoadingScreenProps {
 
 export default function LoadingScreen({ isLoading }: LoadingScreenProps) {
   if (!isLoading) return null;
-
+  
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center">
-      <div className="bg-white/90 p-8 rounded-lg shadow-xl flex flex-col items-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#472D2D] border-t-transparent"></div>
-        <p className="mt-4 text-[#472D2D] font-medium">Memuat...</p>
+    <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 border-4 border-[#472D2D] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-[#472D2D] font-medium">Loading...</p>
       </div>
     </div>
   );
