@@ -1,28 +1,25 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import { NextRequestWithAuth } from 'next-auth/middleware';
 
-export function middleware(request: NextRequest) {
-  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
-  const isLoginPage = request.nextUrl.pathname === '/admin/login';
-  const isAuthenticated = request.cookies.has('adminToken');
+export default async function middleware(request: NextRequestWithAuth) {
+  const token = await getToken({ req: request });
+  const isAuth = !!token;
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
+                    request.nextUrl.pathname.startsWith('/register');
+  const isCheckoutPage = request.nextUrl.pathname.includes('/checkout');
 
-  // If accessing admin route without authentication, redirect to login
-  if (isAdminRoute && !isLoginPage && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/admin/login', request.url));
+  if (isCheckoutPage && !isAuth) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If accessing login page while authenticated, redirect to dashboard
-  if (isLoginPage && isAuthenticated) {
-    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+  if (isAuthPage && isAuth) {
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
 }
 
-// Configure which routes to run middleware on
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/admin/login'
-  ]
+  matcher: ['/login', '/register', '/products/:path*/checkout']
 }; 

@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StarIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { useLoading } from '@/context/LoadingContext';
+import { useSession } from 'next-auth/react';
 
 interface Product {
   id: string;
@@ -21,28 +23,33 @@ interface Product {
   updatedAt: string;
 }
 
-export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = React.use(params);
+export default function ProductDetailPage() {
+  const params = useParams();
+  const { data: session } = useSession();
   const [product, setProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { setIsLoading: setGlobalIsLoading } = useLoading();
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        setGlobalIsLoading(true);
+        setError(null);
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${baseUrl}/api/products?id=${unwrappedParams.id}`, { cache: 'no-store' });
+        const res = await fetch(`${baseUrl}/api/products?id=${params.id}`, { 
+          cache: 'no-store',
+          next: { revalidate: 60 } // Revalidate every 60 seconds
+        });
         if (!res.ok) throw new Error('Failed to fetch product');
         const products = await res.json();
-        // If the API returns an array, find the product by id
         if (Array.isArray(products)) {
-          const foundProduct = products.find((p: Product) => p.id === unwrappedParams.id);
+          const foundProduct = products.find((p: Product) => p.id === params.id);
           if (!foundProduct) throw new Error('Product not found');
           setProduct(foundProduct);
-        } else if (products && products.id === unwrappedParams.id) {
+        } else if (products && products.id === params.id) {
           setProduct(products);
         } else {
           throw new Error('Product not found');
@@ -51,12 +58,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         console.error('Error fetching product:', error);
         setError(error instanceof Error ? error.message : 'Failed to load product');
       } finally {
-        setIsLoading(false);
+        setGlobalIsLoading(false);
       }
     };
 
-    fetchProduct();
-  }, [unwrappedParams.id]);
+    if (params.id) {
+      fetchProduct();
+    }
+  }, [params.id, setGlobalIsLoading]);
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(prev => {
@@ -83,13 +92,50 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     setSelectedImageIdx((prev) => (prev === (product?.images.length || 1) - 1 ? 0 : prev + 1));
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#472D2D]"></div>
-      </div>
-    );
-  }
+  const handleAddToCart = () => {
+    // Implement add to cart functionality
+    console.log('Adding to cart:', { product, quantity });
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    
+    // Check if user is logged in using NextAuth session
+    if (!session) {
+      // Store the intended destination
+      sessionStorage.setItem('redirectAfterLogin', `/products/${product.id}/checkout`);
+      // Store checkout data
+      const checkoutData = {
+        items: [{
+          productId: product.id,
+          quantity: quantity,
+          price: product.price,
+          name: product.name,
+          image: product.images[0]
+        }]
+      };
+      sessionStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+      // Redirect to login
+      window.location.href = '/login';
+      return;
+    }
+    
+    const checkoutData = {
+      items: [{
+        productId: product.id,
+        quantity: quantity,
+        price: product.price,
+        name: product.name,
+        image: product.images[0]
+      }]
+    };
+    
+    // Store checkout data in sessionStorage
+    sessionStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+    
+    // Redirect to checkout page with product ID
+    window.location.href = `/products/${product.id}/checkout`;
+  };
 
   if (error || !product) {
     return (
@@ -107,11 +153,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(product.price);
 
   return (
@@ -125,8 +171,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {/* Breadcrumb */}
       <nav className="max-w-5xl mx-auto px-4 text-xs text-gray-500 mb-8">
         <ol className="flex space-x-2">
-          <li><Link href="/">Home</Link> /</li>
-          <li><Link href="/products">Products</Link> /</li>
+          <li><Link href="/">Beranda</Link> /</li>
+          <li><Link href="/products">Produk</Link> /</li>
           <li className="text-gray-700 font-semibold">{product.name}</li>
         </ol>
       </nav>
@@ -141,22 +187,33 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               src={product.images[selectedImageIdx] || '/placeholder.png'}
               alt={product.name}
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-contain rounded-lg bg-gray-100"
               priority
+              loading="eager"
             />
           </div>
-          <div className="flex gap-2 mt-2">
-            {product.images.map((img, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setSelectedImageIdx(idx)}
-                className={`relative w-16 h-16 border rounded overflow-hidden bg-gray-100 focus:outline-none ${selectedImageIdx === idx ? 'border-[#472D2D] ring-1 ring-[#472D2D]' : 'border-gray-300'}`}
-                aria-label={`Pilih gambar ${idx + 1}`}
-              >
-                <Image src={img || '/placeholder.png'} alt={product.name} fill className="object-contain" />
-              </button>
-            ))}
+          <div className="w-full overflow-x-auto pb-4 -mb-4">
+            <div className="flex gap-2 min-w-min px-1">
+              {product.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedImageIdx(idx)}
+                  className={`relative w-16 h-16 flex-shrink-0 border rounded overflow-hidden bg-gray-100 focus:outline-none ${selectedImageIdx === idx ? 'border-[#472D2D] ring-1 ring-[#472D2D]' : 'border-gray-300'}`}
+                  aria-label={`Pilih gambar ${idx + 1}`}
+                >
+                  <Image 
+                    src={img || '/placeholder.png'} 
+                    alt={`${product.name} - Image ${idx + 1}`} 
+                    fill 
+                    sizes="64px"
+                    className="object-contain"
+                    loading={idx === 0 ? "eager" : "lazy"}
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         {/* Details */}
@@ -195,27 +252,31 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
             <span className={`text-sm ${product.stock === 0 ? 'text-red-500' : product.stock <= 10 ? 'text-orange-500' : 'text-green-500'} font-semibold`}>
                 {product.stock === 0 
-                ? 'Out of Stock' 
+                ? 'Habis' 
                 : product.stock <= 10 
-                ? 'Only ' + product.stock + ' Items Left!'
-                : product.stock + ' Items in Stock'}
+                ? 'Hanya ' + product.stock + ' Item Tersedia!'
+                : product.stock + ' Item Tersedia'}
             </span>
           </div>
           {/* Actions */}
           <div className="flex gap-4 mb-4">
-            <button className={`${product.stock === 0 ? 'cursor-not-allowed disabled' : 'cursor-pointer'} flex-1 bg-[#472D2D] hover:bg-[#382525] text-white py-3 rounded-lg font-semibold text-lg transition`}>
-                {product.stock === 0 ? 'Out of Stock' : 'Buy Now'}
+            <button
+              className={`${product.stock === 0 ? 'cursor-not-allowed disabled' : 'cursor-pointer'} flex-1 border border-[#472D2D] text-[#472D2D] hover:bg-[#472D2D] hover:text-white py-3 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2`}
+              onClick={handleAddToCart}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" className='text-[12px] md:text-[16px] px-0 mx-0' />
+              </svg>
+              <span className='text-[12px] md:text-[16px] px-0 mx-0'>{product.stock === 0 ? 'Habis' : 'Tambah ke Keranjang'}</span>
             </button>
-            <button className={`${product.stock === 0 ? 'cursor-not-allowed disabled' : 'cursor-pointer'} flex-1 border border-[#472D2D] text-[#472D2D] hover:bg-[#472D2D] hover:text-white py-3 rounded-lg font-semibold text-lg transition`}>
-                {product.stock === 0 ? 'Out of Stock' 
-                : 
-                <div className="flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    Add to Cart
-                </div>
-                }
+            <button
+              className={`${product.stock === 0 ? 'cursor-not-allowed disabled' : 'cursor-pointer'} flex-1 bg-[#472D2D] hover:bg-[#382525] text-white py-3 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2`}
+              onClick={handleBuyNow}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" className='text-[12px] md:text-[16px] px-0 mx-0'/>
+              </svg>
+              <span className='text-[12px] md:text-[16px] px-0 mx-0'>{product.stock === 0 ? 'Habis' : 'Beli Sekarang'}</span>
             </button>
           </div>
         </div>
@@ -253,6 +314,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               src={product.images[selectedImageIdx] || '/placeholder.png'}
               alt={product.name}
               fill
+              sizes="100vw"
               className="object-contain"
               priority
             />
