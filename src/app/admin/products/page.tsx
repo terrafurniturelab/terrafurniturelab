@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useLoading } from '@/context/LoadingContext';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface Category {
   id: string;
@@ -42,6 +43,7 @@ export default function ProductsPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const { setIsLoading } = useLoading();
   const dropRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const fetchProducts = async () => {
     try {
@@ -278,7 +280,7 @@ export default function ProductsPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {products.map((product) => (
-              <tr key={product.id}>
+              <tr key={product.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/admin/products/${product.id}/detail`)}>
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="h-32 w-32 relative flex-shrink-0">
@@ -312,13 +314,19 @@ export default function ProductsPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
-                    onClick={() => handleEdit(product)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(product);
+                    }}
                     className="text-[#472D2D] hover:text-[#382525] mr-4 cursor-pointer"
                   >
                     <PencilIcon className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(product.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(product.id);
+                    }}
                     className="text-red-600 hover:text-red-900 cursor-pointer"
                   >
                     <TrashIcon className="h-5 w-5" />
