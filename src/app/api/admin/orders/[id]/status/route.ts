@@ -15,12 +15,17 @@ function isValidState(state: string): state is CheckoutState {
 }
 
 // Fungsi untuk mengecek ketersediaan stok
-async function checkStockAvailability(productId: string, quantity: number): Promise<boolean> {
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    select: { stock: true }
-  });
-  return product ? product.stock >= quantity : false;
+async function checkStockAvailability(items: { productId: string; quantity: number }[]): Promise<{ hasStock: boolean; productName?: string }> {
+  for (const item of items) {
+    const product = await prisma.product.findUnique({
+      where: { id: item.productId },
+      select: { stock: true, name: true }
+    });
+    if (!product || product.stock < item.quantity) {
+      return { hasStock: false, productName: product?.name };
+    }
+  }
+  return { hasStock: true };
 }
 
 // Fungsi untuk mengupdate status dan stok dalam satu transaksi
@@ -28,41 +33,22 @@ async function updateOrderStatusAndStock(
   orderId: string,
   newState: CheckoutState,
   currentState: CheckoutState,
-  productId: string,
-  quantity: number
+  items: { productId: string; quantity: number }[]
 ) {
-  // Jika mengubah dari PENDING ke PROCESSING
-  if (currentState === 'PENDING' && newState === 'PROCESSING') {
-    const hasStock = await checkStockAvailability(productId, quantity);
-    if (!hasStock) {
-      throw new Error('Not enough stock available');
-    }
-
-    return prisma.$transaction([
-      prisma.checkout.update({
-        where: { id: orderId },
-        data: { state: newState },
-        include: { product: true, user: true, address: true },
-      }),
-      prisma.product.update({
-        where: { id: productId },
-        data: { stock: { decrement: quantity } },
-      }),
-    ]);
-  }
-
-  // Jika mengubah dari PROCESSING ke CANCELLED
+  // Jika mengubah dari PROCESSING ke CANCELLED, kembalikan stok
   if (currentState === 'PROCESSING' && newState === 'CANCELLED') {
     return prisma.$transaction([
       prisma.checkout.update({
         where: { id: orderId },
         data: { state: newState },
-        include: { product: true, user: true, address: true },
+        include: { items: { include: { product: true } }, user: true, address: true },
       }),
-      prisma.product.update({
-        where: { id: productId },
-        data: { stock: { increment: quantity } },
-      }),
+      ...items.map(item =>
+        prisma.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        })
+      ),
     ]);
   }
 
@@ -70,7 +56,7 @@ async function updateOrderStatusAndStock(
   return prisma.checkout.update({
     where: { id: orderId },
     data: { state: newState },
-    include: { product: true, user: true, address: true },
+    include: { items: { include: { product: true } }, user: true, address: true },
   });
 }
 
@@ -97,7 +83,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     // Dapatkan data order saat ini
     const currentOrder = await prisma.checkout.findUnique({
       where: { id: orderId },
-      include: { product: true },
+      include: { 
+        items: {
+          include: {
+            product: true
+          }
+        }
+      },
     });
 
     if (!currentOrder) {
@@ -112,8 +104,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       orderId,
       newState,
       currentOrder.state,
-      currentOrder.productId,
-      currentOrder.quantity
+      currentOrder.items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+      }))
     );
 
     // Jika result adalah array (hasil transaksi), ambil elemen pertama
@@ -122,17 +116,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error('Error updating order status:', error);
-    
-    // Handle specific errors
-    if (error instanceof Error) {
-      if (error.message === 'Not enough stock available') {
-        return NextResponse.json(
-          { error: 'Not enough stock available' },
-          { status: 400 }
-        );
-      }
-    }
-
     return NextResponse.json(
       { error: 'Failed to update order status' },
       { status: 500 }

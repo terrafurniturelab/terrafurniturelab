@@ -6,7 +6,11 @@ export async function GET() {
     const orders = await prisma.checkout.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
-        product: true,
+        items: {
+          include: {
+            product: true
+          }
+        },
         user: true,
         address: true,
       },

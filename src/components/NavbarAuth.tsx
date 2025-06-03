@@ -15,6 +15,7 @@ const NavbarAuth = () => {
                 width={800}
                 height={800}
                 className="h-11 w-auto"
+                priority
               />
             </Link>
           </div>

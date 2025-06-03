@@ -11,6 +11,12 @@ const nextConfig = {
         hostname: 'upload.wikimedia.org',
       },
     ],
+    domains: [
+      'www.mandiri.co.id',
+      'www.bni.co.id',
+      'upload.wikimedia.org',
+      'lh3.googleusercontent.com'
+    ],
   },
 }
 

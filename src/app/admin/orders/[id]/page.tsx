@@ -42,20 +42,28 @@ export default function AdminOrderDetailPage() {
         &larr; Kembali ke daftar pesanan
       </button>
       <h1 className="text-2xl font-bold mb-4 text-[#472D2D]">Detail Pesanan</h1>
-      <div className="mb-4 flex gap-4 items-center">
-        <div className="w-20 h-20 relative">
-          <Image
-            src={order.product.images[0] || "/placeholder.png"}
-            alt={order.product.name}
-            fill
-            className="object-cover rounded"
-          />
-        </div>
-        <div>
-          <div className="font-semibold text-lg">{order.product.name}</div>
-          <div className="text-sm text-gray-500">Qty: {order.quantity}</div>
-        </div>
+      
+      {/* Order Items */}
+      <div className="space-y-4 mb-6">
+        <h2 className="font-semibold text-lg text-[#472D2D]">Item Pesanan</h2>
+        {order.items.map((item: any) => (
+          <div key={item.id} className="flex gap-4 items-center p-4 bg-gray-50 rounded-lg">
+            <div className="w-20 h-20 relative">
+              <Image
+                src={item.product.images[0] || "/placeholder.png"}
+                alt={item.product.name}
+                fill
+                className="object-cover rounded"
+              />
+            </div>
+            <div>
+              <div className="font-semibold text-lg">{item.product.name}</div>
+              <div className="text-sm text-gray-500">Qty: {item.quantity}</div>
+            </div>
+          </div>
+        ))}
       </div>
+
       <div className="mb-2">
         <span className="font-semibold">Status:</span> <span className="inline-block px-2 py-1 rounded bg-gray-100 text-xs font-mono">{order.state}</span>
       </div>
@@ -68,10 +76,25 @@ export default function AdminOrderDetailPage() {
       <div className="mb-2">
         <span className="font-semibold">No. Telepon:</span> {order.address.phoneNumber}
       </div>
-      <div className="mb-2">
-        <span className="font-semibold">Alamat Pengiriman:</span>
-        <div className="text-xs text-gray-700 mt-1">
-          {order.address.alamatLengkap}, {order.address.kecamatan}, {order.address.city}, {order.address.province}, {order.address.kodePos}
+      <div className="mb-4">
+        <span className="font-semibold block mb-2">Alamat Pengiriman:</span>
+        <div className="space-y-1 text-sm text-gray-700 pl-4">
+          <div>
+            <span className="font-medium">Provinsi:</span> {order.address.province}
+          </div>
+          <div>
+            <span className="font-medium">Kabupaten/Kota:</span> {order.address.city}
+          </div>
+          <div>
+            <span className="font-medium">Kecamatan:</span> {order.address.kecamatan}
+          </div>
+          <div>
+            <span className="font-medium">Kode Pos:</span> {order.address.kodePos}
+          </div>
+          <div>
+            <span className="font-medium">Alamat Lengkap:</span>
+            <p className="mt-1 text-gray-600">{order.address.alamatLengkap}</p>
+          </div>
         </div>
       </div>
       <div className="mb-2">

@@ -1,122 +1,133 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('adminToken');
-
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     // Get all required statistics in parallel
     const [
       totalCategories,
       totalProductTypes,
+      totalProducts,
       totalUsers,
       totalOrders,
-      totalDelivered,
-      totalRevenue,
-      averageOrderValue
+      deliveredOrders,
+      recentOrders,
+      productsByCategory,
+      lowStockProducts
     ] = await Promise.all([
-      // Total Categories
+      // Total Categories (count of category IDs)
       prisma.category.count(),
-      
-      // Total Products
+
+      // Total Product Types (count of product IDs)
       prisma.product.count(),
-      
-      // Total Users
+
+      // Total Products (sum of all product stocks)
+      prisma.product.aggregate({
+        _sum: {
+          stock: true
+        }
+      }),
+
+      // Total Users (count of user IDs)
       prisma.user.count(),
-      
-      // Total Orders (Checkouts)
+
+      // Total Orders (count of checkout IDs)
       prisma.checkout.count(),
-      
-      // Total Delivered Orders
+
+      // Delivered Orders (count of checkouts with DELIVERED status)
       prisma.checkout.count({
         where: {
           state: 'DELIVERED'
         }
       }),
-      
-      // Total Revenue
-      prisma.checkout.aggregate({
-        where: {
-          state: {
-            in: ['DELIVERED', 'SHIPPED', 'PROCESSING']
-          }
+
+      // Recent Orders
+      prisma.checkout.findMany({
+        take: 5,
+        orderBy: {
+          createdAt: 'desc'
         },
-        _sum: {
-          quantity: true
-        }
-      }).then(async (result) => {
-        const totalQuantity = result._sum.quantity || 0;
-        const checkouts = await prisma.checkout.findMany({
-          where: {
-            state: {
-              in: ['DELIVERED', 'SHIPPED', 'PROCESSING']
+        include: {
+          items: {
+            include: {
+              product: true
             }
           },
-          include: {
-            product: true
-          }
-        });
-        return checkouts.reduce((sum, checkout) => 
-          sum + (checkout.quantity * checkout.product.price), 0
-        );
+          user: true,
+          address: true
+        }
       }),
-      
-      // Average Order Value
-      prisma.checkout.aggregate({
+
+      // Products by Category
+      prisma.product.groupBy({
+        by: ['categoryId'],
+        _count: {
+          categoryId: true
+        }
+      }),
+
+      // Low Stock Products (less than 10 items)
+      prisma.product.findMany({
         where: {
-          state: {
-            in: ['DELIVERED', 'SHIPPED', 'PROCESSING']
+          stock: {
+            lt: 10
           }
         },
-        _avg: {
-          quantity: true
+        include: {
+          category: true
         }
-      }).then(async (result) => {
-        const avgQuantity = result._avg.quantity || 0;
-        const checkouts = await prisma.checkout.findMany({
-          where: {
-            state: {
-              in: ['DELIVERED', 'SHIPPED', 'PROCESSING']
-            }
-          },
-          include: {
-            product: true
-          }
-        });
-        const totalValue = checkouts.reduce((sum, checkout) => 
-          sum + (checkout.quantity * checkout.product.price), 0
-        );
-        return checkouts.length > 0 ? totalValue / checkouts.length : 0;
       })
     ]);
 
+    // Get total revenue (sum of all checkout items prices)
+    const orders = await prisma.checkout.findMany({
+      include: {
+        items: {
+          include: {
+            product: true
+          }
+        }
+      }
+    });
+
+    const totalRevenue = orders.reduce((total, order) => {
+      const orderTotal = order.items.reduce((sum, item) => {
+        return sum + (item.product.price * item.quantity);
+      }, 0);
+      return total + orderTotal;
+    }, 0);
+
+    // Get category names for products by category
+    const categories = await prisma.category.findMany({
+      where: {
+        id: {
+          in: productsByCategory.map(p => p.categoryId)
+        }
+      }
+    });
+
+    const productsByCategoryWithNames = productsByCategory.map(p => ({
+      categoryId: p.categoryId,
+      count: p._count.categoryId,
+      categoryName: categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized'
+    }));
+
     return NextResponse.json({
       totalCategories,
-      totalProductTypes, // Using categories as product types
-      totalProducts: await prisma.product.aggregate({
-        _sum: {
-          stock: true
-        }
-      }).then(result => result._sum.stock || 0),
+      totalProductTypes,
+      totalProducts: totalProducts._sum.stock || 0,
       totalUsers,
       totalOrders,
-      totalDelivered,
+      deliveredOrders,
       totalRevenue,
-      averageOrderValue
+      recentOrders,
+      productsByCategory: productsByCategoryWithNames,
+      lowStockProducts
     });
   } catch (error) {
     console.error('Error fetching stats:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Failed to fetch stats' },
       { status: 500 }
     );
   }

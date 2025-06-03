@@ -87,7 +87,7 @@ export default function ProductCard(product: Product) {
               </svg>
             </button>
             <Link
-              href={`/checkout?productId=${product.id}`}
+              href={`/products/${product.id}`}
               className="w-full text-center  bg-[#472D2D] hover:bg-[#382525] text-white border border-[#472D2D] px-2 sm:px-4 py-1.5 sm:py-2 rounded-md transition-colors duration-300 text-[10px] sm:text-sm font-medium"
             >
               Buat Pesanan

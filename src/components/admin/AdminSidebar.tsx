@@ -56,7 +56,14 @@ export default function AdminSidebar() {
       <div className="p-4">
         <div className="flex items-center justify-between mb-8">
           <div className="flex flex-col items-center space-y-2">
-            <Image src="/logo-w.png" alt="Logo" width={170} height={170} className={`border-b-2 border-white ${!isSidebarOpen && 'hidden'}`} />
+            <Image 
+              src="/logo-w.png" 
+              alt="Furniture Lab" 
+              width={150} 
+              height={40} 
+              priority
+              className="object-contain"
+            />
             <h1 className={`font-bold text-xl ${!isSidebarOpen && 'hidden'}`}>
               Admin Panel
             </h1>

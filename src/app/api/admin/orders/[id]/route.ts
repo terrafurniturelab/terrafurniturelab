@@ -7,7 +7,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Get the ID from the URL pathname
     const pathname = new URL(request.url).pathname;
     const id = pathname.split('/').pop();
 
@@ -20,7 +19,11 @@ export async function GET(
         id: id
       },
       include: {
-        product: true,
+        items: {
+          include: {
+            product: true
+          }
+        },
         user: true,
         address: true,
       },
@@ -50,11 +53,15 @@ export async function PATCH(
     const body = await request.json();
     const { status } = body as { status: CheckoutState };
 
-    // Get the current order with product details
+    // Get the current order with items and product details
     const currentOrder = await prisma.checkout.findUnique({
       where: { id },
       include: {
-        product: true,
+        items: {
+          include: {
+            product: true
+          }
+        }
       },
     });
 
@@ -64,12 +71,14 @@ export async function PATCH(
 
     // If status is being changed to 'processing', reduce the product stock
     if (status === 'PROCESSING' && currentOrder.state !== 'PROCESSING') {
-      // Check if there's enough stock
-      if (currentOrder.product.stock < currentOrder.quantity) {
-        return NextResponse.json(
-          { error: 'Not enough stock available' },
-          { status: 400 }
-        );
+      // Check if there's enough stock for all items
+      for (const item of currentOrder.items) {
+        if (item.product.stock < item.quantity) {
+          return NextResponse.json(
+            { error: `Not enough stock available for ${item.product.name}` },
+            { status: 400 }
+          );
+        }
       }
 
       // Update both order status and product stock in a transaction
@@ -78,14 +87,16 @@ export async function PATCH(
           where: { id },
           data: { state: status },
         }),
-        prisma.product.update({
-          where: { id: currentOrder.productId },
-          data: {
-            stock: {
-              decrement: currentOrder.quantity
-            }
-          },
-        }),
+        ...currentOrder.items.map(item =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity
+              }
+            },
+          })
+        ),
       ]);
 
       return NextResponse.json(updatedOrder);
@@ -98,14 +109,16 @@ export async function PATCH(
           where: { id },
           data: { state: status },
         }),
-        prisma.product.update({
-          where: { id: currentOrder.productId },
-          data: {
-            stock: {
-              increment: currentOrder.quantity
-            }
-          },
-        }),
+        ...currentOrder.items.map(item =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                increment: item.quantity
+              }
+            },
+          })
+        ),
       ]);
 
       return NextResponse.json(updatedOrder);
