@@ -14,6 +14,7 @@ interface CheckoutItem {
     name: string;
     images: string[];
     stock: number;
+    price: number;
   };
 }
 
@@ -259,6 +260,7 @@ export default function AdminOrdersPage() {
               <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase">No. Telp</th>
               <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-64">Alamat Pengiriman</th>
               <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-24">Bukti</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-32">Total</th>
               <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-32">Status</th>
             </tr>
           </thead>
@@ -311,6 +313,13 @@ export default function AdminOrdersPage() {
                     ) : (
                       <span className="text-gray-400">Belum ada</span>
                     )}
+                  </td>
+                  <td className="px-2 py-2 text-center">
+                    {new Intl.NumberFormat('id-ID', {
+                      style: 'currency',
+                      currency: 'IDR',
+                      minimumFractionDigits: 0,
+                    }).format(order.items.reduce((total, item) => total + (item.product.price * item.quantity), 0))}
                   </td>
                   <td className="px-2 py-2 text-center">
                     <div className="flex flex-col items-center gap-1">

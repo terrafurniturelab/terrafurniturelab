@@ -60,30 +60,20 @@ async function updateOrderStatusAndStock(
   });
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request) {
   try {
-    // Validasi input
-    const { newState } = await req.json();
-    if (!newState || !isValidState(newState)) {
-      return NextResponse.json(
-        { error: 'Invalid state provided' },
-        { status: 400 }
-      );
+    const id = getOrderIdFromUrl(request.url);
+    if (!id) {
+      return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
     }
 
-    // Dapatkan ID order
-    const orderId = getOrderIdFromUrl(req.url);
-    if (!orderId) {
-      return NextResponse.json(
-        { error: 'Order ID is required' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { newState } = body as { newState: CheckoutState };
 
-    // Dapatkan data order saat ini
+    // Get the current order with items and product details
     const currentOrder = await prisma.checkout.findUnique({
-      where: { id: orderId },
-      include: { 
+      where: { id },
+      include: {
         items: {
           include: {
             product: true
@@ -93,27 +83,68 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     });
 
     if (!currentOrder) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Update status dan stok
-    const result = await updateOrderStatusAndStock(
-      orderId,
-      newState,
-      currentOrder.state,
-      currentOrder.items.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity
-      }))
-    );
+    // Check if there's enough stock when changing to PROCESSING
+    if (newState === 'PROCESSING') {
+      for (const item of currentOrder.items) {
+        if (item.product.stock < item.quantity) {
+          return NextResponse.json(
+            { error: `Not enough stock available for ${item.product.name}` },
+            { status: 400 }
+          );
+        }
+      }
+    }
 
-    // Jika result adalah array (hasil transaksi), ambil elemen pertama
-    const updatedOrder = Array.isArray(result) ? result[0] : result;
-
-    return NextResponse.json(updatedOrder);
+    // Handle stock changes based on status transitions
+    if (newState === 'PROCESSING' && currentOrder.state !== 'PROCESSING') {
+      // Reduce stock when changing to PROCESSING
+      const [updatedOrder] = await prisma.$transaction([
+        prisma.checkout.update({
+          where: { id },
+          data: { state: newState },
+        }),
+        ...currentOrder.items.map(item =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity
+              }
+            },
+          })
+        ),
+      ]);
+      return NextResponse.json(updatedOrder);
+    } else if (newState === 'CANCELLED' && currentOrder.state === 'PROCESSING') {
+      // Restore stock when changing from PROCESSING to CANCELLED
+      const [updatedOrder] = await prisma.$transaction([
+        prisma.checkout.update({
+          where: { id },
+          data: { state: newState },
+        }),
+        ...currentOrder.items.map(item =>
+          prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                increment: item.quantity
+              }
+            },
+          })
+        ),
+      ]);
+      return NextResponse.json(updatedOrder);
+    } else {
+      // For other status changes, just update the order status
+      const updatedOrder = await prisma.checkout.update({
+        where: { id },
+        data: { state: newState },
+      });
+      return NextResponse.json(updatedOrder);
+    }
   } catch (error) {
     console.error('Error updating order status:', error);
     return NextResponse.json(

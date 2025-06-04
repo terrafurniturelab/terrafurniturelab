@@ -31,8 +31,14 @@ export async function GET() {
       // Total Users (count of user IDs)
       prisma.user.count(),
 
-      // Total Orders (count of checkout IDs)
-      prisma.checkout.count(),
+      // Total Orders (count of checkout IDs, excluding CANCELLED)
+      prisma.checkout.count({
+        where: {
+          state: {
+            not: 'CANCELLED'
+          }
+        }
+      }),
 
       // Delivered Orders (count of checkouts with DELIVERED status)
       prisma.checkout.count({
@@ -41,9 +47,14 @@ export async function GET() {
         }
       }),
 
-      // Recent Orders
+      // Recent Orders (excluding CANCELLED)
       prisma.checkout.findMany({
         take: 5,
+        where: {
+          state: {
+            not: 'CANCELLED'
+          }
+        },
         orderBy: {
           createdAt: 'desc'
         },
@@ -79,8 +90,13 @@ export async function GET() {
       })
     ]);
 
-    // Get total revenue (sum of all checkout items prices)
+    // Get total revenue (sum of all checkout items prices, excluding CANCELLED orders)
     const orders = await prisma.checkout.findMany({
+      where: {
+        state: {
+          not: 'CANCELLED'
+        }
+      },
       include: {
         items: {
           include: {
@@ -90,26 +106,27 @@ export async function GET() {
       }
     });
 
+    // Calculate total revenue
     const totalRevenue = orders.reduce((total, order) => {
-      const orderTotal = order.items.reduce((sum, item) => {
-        return sum + (item.product.price * item.quantity);
+      const orderTotal = order.items.reduce((orderSum, item) => {
+        return orderSum + (item.product.price * item.quantity);
       }, 0);
       return total + orderTotal;
     }, 0);
 
     // Get category names for products by category
-    const categories = await prisma.category.findMany({
-      where: {
-        id: {
-          in: productsByCategory.map(p => p.categoryId)
-        }
+    const categoryNames = await prisma.category.findMany({
+      select: {
+        id: true,
+        name: true
       }
     });
 
-    const productsByCategoryWithNames = productsByCategory.map(p => ({
-      categoryId: p.categoryId,
-      count: p._count.categoryId,
-      categoryName: categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized'
+    // Map category IDs to names
+    const productsByCategoryWithNames = productsByCategory.map(cat => ({
+      categoryId: cat.categoryId,
+      categoryName: categoryNames.find(c => c.id === cat.categoryId)?.name || 'Unknown',
+      count: cat._count.categoryId
     }));
 
     return NextResponse.json({

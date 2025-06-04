@@ -68,6 +68,15 @@ export default function AdminOrderDetailPage() {
         <span className="font-semibold">Status:</span> <span className="inline-block px-2 py-1 rounded bg-gray-100 text-xs font-mono">{order.state}</span>
       </div>
       <div className="mb-2">
+        <span className="font-semibold">Total:</span> <span className="text-[#472D2D] font-medium">
+          {new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+          }).format(order.items.reduce((total: number, item: { product: { price: number }, quantity: number }) => total + (item.product.price * item.quantity), 0))}
+        </span>
+      </div>
+      <div className="mb-2">
         <span className="font-semibold">Nama Pemesan:</span> {order.address.fullName}
       </div>
       <div className="mb-2">
