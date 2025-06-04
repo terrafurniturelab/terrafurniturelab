@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import content from '@/content/content.json';
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, User, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const { data: session } = useSession();
