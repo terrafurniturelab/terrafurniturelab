@@ -60,6 +60,7 @@ export default function CheckoutPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const [addressForm, setAddressForm] = useState<AddressForm>({
     fullName: '',
     phoneNumber: '',
@@ -389,7 +390,8 @@ export default function CheckoutPage() {
     }
 
     try {
-      setIsLoading(true);
+      setIsSubmittingPayment(true);
+      setShowPaymentModal(false);
 
       // Get checkout data from session storage
       const checkoutDataStr = sessionStorage.getItem('checkoutData');
@@ -491,14 +493,14 @@ export default function CheckoutPage() {
       // Clear session storage
       sessionStorage.removeItem('checkoutData');
       
-      // Close payment modal and show success modal
-      setShowPaymentModal(false);
+      // Show success modal
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error:', error);
       alert(error instanceof Error ? error.message : 'Gagal mengupload bukti pembayaran');
+      setShowPaymentModal(true);
     } finally {
-      setIsLoading(false);
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -847,6 +849,21 @@ export default function CheckoutPage() {
                 Bayar Sekarang
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Screen */}
+      {isSubmittingPayment && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#472D2D] mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold text-[#472D2D] mb-2">
+              Memproses Pembayaran
+            </h3>
+            <p className="text-gray-600">
+              Mohon tunggu sebentar, kami sedang memproses pembayaran Anda...
+            </p>
           </div>
         </div>
       )}

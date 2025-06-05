@@ -33,12 +33,18 @@ export default function Navbar() {
       }
     };
 
+    const handleUnreviewedCountUpdate = (event: CustomEvent) => {
+      setUnreviewedCount(event.detail.count);
+    };
+
     window.addEventListener('scroll', handleScroll);
     document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('updateUnreviewedCount', handleUnreviewedCountUpdate as EventListener);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('updateUnreviewedCount', handleUnreviewedCountUpdate as EventListener);
     };
   }, []);
 
@@ -438,7 +444,14 @@ export default function Navbar() {
                         : 'text-white hover:text-coklat-terang'
                   }`}
                 >
-                  {content.navbar.userMenu.profile}
+                  <div className="relative">
+                    {content.navbar.userMenu.profile}
+                    {unreviewedCount > 0 && (
+                      <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {unreviewedCount}
+                      </span>
+                    )}
+                  </div>
                 </Link>
                 <Link 
                   href="/orders" 

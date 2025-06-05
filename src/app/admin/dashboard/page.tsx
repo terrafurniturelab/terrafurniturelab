@@ -19,7 +19,7 @@ interface Stats {
   totalProducts: number;
   totalUsers: number;
   totalOrders: number;
-  totalDelivered: number;
+  deliveredOrders: number;
   totalRevenue: number;
   averageOrderValue: number;
 }
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
     },
     {
       name: 'Pesanan Terkirim',
-      value: stats?.totalDelivered || 0,
+      value: stats?.deliveredOrders || 0,
       icon: TruckIcon,
       color: 'bg-indigo-500',
     },

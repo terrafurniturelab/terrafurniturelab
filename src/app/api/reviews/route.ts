@@ -11,9 +11,9 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { orderId, review } = body;
+    const { orderId, review, rating } = body;
 
-    if (!orderId || !review) {
+    if (!orderId || !review || !rating) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
@@ -33,54 +33,51 @@ export async function POST(request: Request) {
       return new NextResponse("Order not found or not eligible for review", { status: 404 });
     }
 
-    // Check if user has already reviewed this order
-    const existingReview = await prisma.review.findFirst({
-      where: {
-        userId: session.user.id,
-        productId: order.items[0].productId,
-      },
-    });
-
-    if (existingReview) {
-      return new NextResponse("You have already reviewed this order", { status: 400 });
-    }
-
-    // Create review for each product in the order
-    const reviewPromises = order.items.map((item) =>
-      prisma.review.create({
-        data: {
-          rating: 5, // Default rating, you might want to add a rating field to the form
-          comment: review,
-          productId: item.productId,
+    // Create reviews for all products in the order
+    const reviewPromises = order.items.map(async (item) => {
+      // Check if user has already reviewed this product
+      const existingReview = await prisma.review.findFirst({
+        where: {
           userId: session.user.id,
-        },
-      })
-    );
-
-    await Promise.all(reviewPromises);
-
-    // Update product rating
-    for (const item of order.items) {
-      const product = await prisma.product.findUnique({
-        where: { id: item.productId },
-        include: {
-          reviews: true,
+          productId: item.productId,
         },
       });
 
-      if (product) {
-        const totalRating = product.reviews.reduce((acc, review) => acc + review.rating, 0);
-        const averageRating = totalRating / product.reviews.length;
-
-        await prisma.product.update({
-          where: { id: item.productId },
+      if (!existingReview) {
+        // Create review for this product
+        await prisma.review.create({
           data: {
-            rating: averageRating,
-            reviewCount: product.reviews.length,
+            rating: rating,
+            comment: review,
+            productId: item.productId,
+            userId: session.user.id,
           },
         });
+
+        // Update product rating
+        const product = await prisma.product.findUnique({
+          where: { id: item.productId },
+          include: {
+            reviews: true,
+          },
+        });
+
+        if (product) {
+          const totalRating = product.reviews.reduce((acc, review) => acc + review.rating, 0);
+          const averageRating = totalRating / product.reviews.length;
+
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              rating: averageRating,
+              reviewCount: product.reviews.length,
+            },
+          });
+        }
       }
-    }
+    });
+
+    await Promise.all(reviewPromises);
 
     return new NextResponse("Review submitted successfully", { status: 200 });
   } catch (error) {

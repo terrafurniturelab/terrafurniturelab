@@ -2,12 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
+    const params = await context.params;
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { 
+        id: params.id
+      },
       include: {
         category: {
           select: {
@@ -19,6 +22,7 @@ export async function GET(
             user: {
               select: {
                 name: true,
+                image: true,
               },
             },
           },

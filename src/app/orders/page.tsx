@@ -22,11 +22,32 @@ export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unreviewedOrders, setUnreviewedOrders] = useState<OrderWithDetails[]>([]);
 
   const currentStatus = searchParams.get("status") || "semua";
 
   useEffect(() => {
     fetchOrders();
+    if (currentStatus === "selesai") {
+      fetchUnreviewedOrders();
+    }
+
+    const handleOrderItemsUpdate = (event: CustomEvent) => {
+      const { orderId, items } = event.detail;
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, items } 
+            : order
+        )
+      );
+    };
+
+    window.addEventListener('updateOrderItems', handleOrderItemsUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('updateOrderItems', handleOrderItemsUpdate as EventListener);
+    };
   }, [currentStatus]);
 
   const fetchOrders = async () => {
@@ -44,6 +65,17 @@ export default function OrdersPage() {
     }
   };
 
+  const fetchUnreviewedOrders = async () => {
+    try {
+      const response = await fetch('/api/reviews/unreviewed-count');
+      if (!response.ok) throw new Error("Failed to fetch unreviewed orders");
+      const data = await response.json();
+      setUnreviewedOrders(data.orders);
+    } catch (error) {
+      console.error("Error fetching unreviewed orders:", error);
+    }
+  };
+
   const handleStatusChange = (status: string) => {
     // Convert "Selesai" to "DELIVERED" for API
     const apiStatus = status === "selesai" ? "DELIVERED" : status.toUpperCase();
@@ -56,6 +88,10 @@ export default function OrdersPage() {
 
   const handleContactSeller = (orderId: string) => {
     router.push(`/chat/${orderId}`);
+  };
+
+  const handleReview = (productId: string) => {
+    router.push(`/products/${productId}/review`);
   };
 
   return (

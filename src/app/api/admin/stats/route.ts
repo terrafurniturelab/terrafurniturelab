@@ -43,7 +43,7 @@ export async function GET() {
       // Delivered Orders (count of checkouts with DELIVERED status)
       prisma.checkout.count({
         where: {
-          state: 'DELIVERED'
+          state: 'DELIVERED' 
         }
       }),
 

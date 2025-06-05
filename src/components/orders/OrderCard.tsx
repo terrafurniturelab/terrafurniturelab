@@ -65,7 +65,7 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
   const [rating, setRating] = useState(5);
   const [selectedItem, setSelectedItem] = useState<CheckoutItemWithProduct | null>(null);
 
-  const handleReviewSubmit = async (itemId: string) => {
+  const handleReviewSubmit = async () => {
     if (!review) {
       toast.error("Mohon isi ulasan Anda");
       return;
@@ -79,11 +79,30 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
           orderId: order.id,
           review,
           rating,
-          itemId,
         }),
       });
 
       if (!response.ok) throw new Error("Failed to submit review");
+
+      // Update unreviewed count in navbar
+      const unreviewedResponse = await fetch('/api/reviews/unreviewed-count');
+      if (unreviewedResponse.ok) {
+        const data = await unreviewedResponse.json();
+        // Dispatch custom event to update navbar
+        window.dispatchEvent(new CustomEvent('updateUnreviewedCount', { 
+          detail: { count: data.count } 
+        }));
+      }
+
+      // Update order items to reflect reviewed status
+      const updatedOrderResponse = await fetch(`/api/orders/${order.id}`);
+      if (updatedOrderResponse.ok) {
+        const updatedOrder = await updatedOrderResponse.json();
+        // Dispatch custom event to update order items
+        window.dispatchEvent(new CustomEvent('updateOrderItems', { 
+          detail: { orderId: order.id, items: updatedOrder.items } 
+        }));
+      }
 
       toast.success("Ulasan berhasil dikirim");
       setReviewDialogOpen(false);
@@ -116,19 +135,19 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
           {order.items.map((item) => (
             <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-4 bg-muted/50 rounded-xl">
               <img
-                src={item.product.images[0]}
-                alt={item.product.name}
+                src={item.product?.images?.[0] || '/placeholder.png'}
+                alt={item.product?.name || 'Product'}
                 className="w-full sm:w-28 h-48 sm:h-28 object-cover rounded-lg shadow-sm"
               />
               <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
                 <div className="flex-1">
-                  <h3 className="font-medium text-lg text-[#472D2D]">{item.product.name}</h3>
+                  <h3 className="font-medium text-lg text-[#472D2D]">{item.product?.name || 'Product not found'}</h3>
                   <div className="mt-2 space-y-1">
                     <p className="text-sm text-muted-foreground">
                       Jumlah: {item.quantity} item
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Harga Satuan: Rp {item.product.price.toLocaleString()}
+                      Harga Satuan: Rp {item.product?.price?.toLocaleString() || '0'}
                     </p>
                   </div>
                 </div>
@@ -136,28 +155,16 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
                   <p className="text-base font-semibold">
                     Total:
                     <span className="font-bold text-xl sm:text-2xl ml-2 text-[#472D2D]">
-                      Rp{(item.quantity * item.product.price).toLocaleString()}
+                      Rp{((item.quantity * (item.product?.price || 0))).toLocaleString()}
                     </span>
                   </p>
                   <div className="flex flex-col gap-2 mt-2">
                     {order.state === "DELIVERED" && (
                       <>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-[#472D2D]">Status Ulasan:</p>
-                          {item.hasReview ? (
-                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                              Sudah Diberi Ulasan
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                              Belum Diberi Ulasan
-                            </span>
-                          )}
-                        </div>
                         {!item.hasReview && (
                           <Button
                             variant="outline"
-                            className="flex items-center gap-2 bg-[#472D2D] text-white cursor-pointer w-full sm:w-auto"
+                            className="mt-2 flex items-center gap-2 bg-[#472D2D] text-white cursor-pointer w-full sm:w-auto"
                             onClick={() => {
                               setSelectedItem(item);
                               setReviewDialogOpen(true);
@@ -257,11 +264,7 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
                 Batal
               </Button>
               <Button
-                onClick={() => {
-                  if (selectedItem) {
-                    handleReviewSubmit(selectedItem.id);
-                  }
-                }}
+                onClick={handleReviewSubmit}
                 className="flex-1 bg-[#472D2D] text-white hover:bg-[#472D2D]/90"
               >
                 Kirim Ulasan

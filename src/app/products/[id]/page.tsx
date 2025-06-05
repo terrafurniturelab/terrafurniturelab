@@ -21,6 +21,22 @@ interface Product {
   category: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
+  reviews: Review[];
+}
+
+interface Review {
+  id: string;
+  userId: string;
+  productId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+    image: string;
+  };
 }
 
 export default function ProductDetailPage() {
@@ -39,21 +55,13 @@ export default function ProductDetailPage() {
         setGlobalIsLoading(true);
         setError(null);
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${baseUrl}/api/products?id=${params.id}`, { 
+        const res = await fetch(`${baseUrl}/api/products/${params.id}`, { 
           cache: 'no-store',
           next: { revalidate: 60 } // Revalidate every 60 seconds
         });
         if (!res.ok) throw new Error('Failed to fetch product');
-        const products = await res.json();
-        if (Array.isArray(products)) {
-          const foundProduct = products.find((p: Product) => p.id === params.id);
-          if (!foundProduct) throw new Error('Product not found');
-          setProduct(foundProduct);
-        } else if (products && products.id === params.id) {
-          setProduct(products);
-        } else {
-          throw new Error('Product not found');
-        }
+        const data = await res.json();
+        setProduct(data);
       } catch (error) {
         console.error('Error fetching product:', error);
         setError(error instanceof Error ? error.message : 'Failed to load product');
@@ -227,7 +235,7 @@ export default function ProductDetailPage() {
               ))}
             </div>
             <span className="text-[#472D2D] font-semibold text-sm">{product.rating.toFixed(1)}</span>
-            <span className="text-xs text-gray-500">({product.reviewCount} reviews)</span>
+            <span className="text-xs text-gray-500">({product.reviewCount} ulasan)</span>
           </div>
           <div className="text-2xl font-bold text-gray-900 mb-1">{formattedPrice}</div>
           
@@ -342,38 +350,46 @@ export default function ProductDetailPage() {
       <section className="max-w-5xl mx-auto px-4 mt-12">
         <h2 className="text-xl font-bold text-[#472D2D] mb-6">Ulasan Pembeli ({product.reviewCount})</h2>
         <div className="space-y-6">
-          {product.reviewCount === 0 ? (
+          {!product.reviews || product.reviews.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
               <p className="text-gray-600">Belum ada ulasan untuk produk ini</p>
             </div>
           ) : (
-            // Example mockup review
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-[#472D2D] flex items-center justify-center">
-                    <span className="text-white text-lg font-semibold">JD</span>
+            <div className="space-y-6">
+              {product.reviews.map((review) => (
+                <div key={review.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-[#472D2D] flex items-center justify-center">
+                        <span className="text-white text-lg font-semibold">
+                          <Image src={review.user?.image || '/user.png'} alt={review.user?.name || 'Anonymous'} width={48} height={48} className="rounded-full" />
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-gray-900">{review.user?.name || 'Anonymous'}</h3>
+                        <span className="text-xs text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center mt-1">
+                        {[...Array(5)].map((_, idx) => (
+                          <StarIcon
+                            key={idx}
+                            className={`h-4 w-4 ${idx < (review.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}`}
+                          />
+                        ))}
+                      </div>
+                      <p className="mt-2 text-sm text-gray-600">{review.comment || 'Tidak ada komentar'}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-grow">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-900">John Doe</h3>
-                    <span className="text-xs text-gray-500">2 hari yang lalu</span>
-                  </div>
-                  <div className="flex items-center mt-1">
-                    {[...Array(5)].map((_, idx) => (
-                      <StarIcon
-                        key={idx}
-                        className={`h-4 w-4 ${idx < 4 ? 'text-yellow-400' : 'text-gray-300'}`}
-                      />
-                    ))}
-                  </div>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Produk sangat bagus dan sesuai dengan deskripsi. Pengiriman cepat dan pelayanan ramah. 
-                    Saya sangat puas dengan pembelian ini dan akan merekomendasikan kepada teman-teman.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           )}
         </div>

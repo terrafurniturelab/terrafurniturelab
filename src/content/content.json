@@ -8,11 +8,11 @@
       "about": "Tentang Kami"
     },
     "userMenu": {
-      "profile": "Profile",
-      "orders": "Orders",
-      "signOut": "Sign out",
-      "login": "Login",
-      "register": "Register"
+      "profile": "Profil",
+      "orders": "Pesanan",
+      "signOut": "Keluar",
+      "login": "Masuk",
+      "register": "Daftar"
     }
   },
   "banner": {
