@@ -47,6 +47,7 @@ export default function ProductDetailPage() {
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { setIsLoading: setGlobalIsLoading } = useLoading();
 
   useEffect(() => {
@@ -143,6 +144,35 @@ export default function ProductDetailPage() {
     
     // Redirect to checkout page with product ID
     window.location.href = `/products/${product.id}/checkout`;
+  };
+
+  const handleSubmitReview = async (reviewData: { rating: number; comment: string }) => {
+    try {
+      const response = await fetch(`/api/products/${params.id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit review');
+      }
+
+      // Show success modal
+      setShowSuccessModal(true);
+
+      // Refresh product data to show new review
+      const updatedProductResponse = await fetch(`/api/products/${params.id}`);
+      if (updatedProductResponse.ok) {
+        const updatedProduct = await updatedProductResponse.json();
+        setProduct(updatedProduct);
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit review');
+    }
   };
 
   if (error || !product) {
@@ -342,6 +372,29 @@ export default function ProductDetailPage() {
                 aria-label={`Go to image ${idx + 1}`}
               />
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Ulasan Berhasil Dikirim</h3>
+              <p className="text-sm text-gray-500 mb-4">Terima kasih atas ulasan Anda!</p>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-[#472D2D] text-white py-2 px-4 rounded-lg hover:bg-[#382525] transition-colors"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}
