@@ -16,6 +16,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+  const [unreviewedCount, setUnreviewedCount] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,6 +40,22 @@ export default function Navbar() {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchUnreviewedCount = async () => {
+      try {
+        const response = await fetch('/api/reviews/unreviewed-count');
+        if (response.ok) {
+          const data = await response.json();
+          setUnreviewedCount(data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching unreviewed count:', error);
+      }
+    };
+
+    fetchUnreviewedCount();
   }, []);
 
   const isActive = (path: string) => {
@@ -169,13 +186,20 @@ export default function Navbar() {
                       isScrolled ? 'text-gray-700 hover:text-[#472D2D]' : 'text-white hover:text-[#472D2D]'
                     }`}
                   >
-                    <Image
-                      src={session.user?.image || "/user.png"}
-                      alt="Profile"
-                      width={40}
-                      height={40}
-                      className="rounded-full mr-2"
-                    />
+                    <div className="relative">
+                      <Image
+                        src={session.user?.image || "/user.png"}
+                        alt="Profile"
+                        width={40}
+                        height={40}
+                        className="rounded-full mr-2"
+                      />
+                      {unreviewedCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {unreviewedCount}
+                        </span>
+                      )}
+                    </div>
                   </button>
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-[#472D2D]/20 backdrop-blur-sm">
@@ -194,7 +218,7 @@ export default function Navbar() {
                       </Link>
                       <Link 
                         href="/orders" 
-                        className={`flex items-center px-4 py-3 text-sm transition-all duration-300 hover:bg-gray-100 ${
+                        className={`flex items-center px-4 py-3 text-sm transition-all duration-300 hover:bg-gray-100 relative ${
                           isActive('/orders')
                             ? 'bg-gradient-to-r from-coklat-terang/20 to-coklat-terang/10 text-coklat-tua font-semibold'
                             : 'text-gray-700 hover:bg-gradient-to-r hover:from-coklat-terang/20 hover:to-coklat-terang/10'
@@ -204,6 +228,11 @@ export default function Navbar() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                         {content.navbar.userMenu.orders}
+                        {unreviewedCount > 0 && (
+                          <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreviewedCount}
+                          </span>
+                        )}
                       </Link>
                       <div className="border-t border-gray-100 my-1"></div>
                       <button
@@ -423,7 +452,14 @@ export default function Navbar() {
                         : 'text-white hover:text-coklat-terang'
                   }`}
                 >
-                  {content.navbar.userMenu.orders}
+                  <div className="relative">
+                    {content.navbar.userMenu.orders}
+                    {unreviewedCount > 0 && (
+                      <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {unreviewedCount}
+                      </span>
+                    )}
+                  </div>
                 </Link>
                 <button
                   onClick={() => signOut()}
