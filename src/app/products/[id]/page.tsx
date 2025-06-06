@@ -230,6 +230,27 @@ export default function ProductDetailPage() {
               priority
               loading="eager"
             />
+            {/* Navigation Buttons */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevImage(e);
+              }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-all"
+              aria-label="Previous image"
+            >
+              <ChevronLeftIcon className="h-6 w-6 text-gray-800" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextImage(e);
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-all"
+              aria-label="Next image"
+            >
+              <ChevronRightIcon className="h-6 w-6 text-gray-800" />
+            </button>
           </div>
           <div className="w-full overflow-x-auto pb-4 -mb-4">
             <div className="flex gap-2 min-w-min px-1">
