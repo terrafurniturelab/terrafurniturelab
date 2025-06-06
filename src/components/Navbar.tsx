@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, User, LogOut } from "lucide-react";
 
 export default function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -51,18 +51,30 @@ export default function Navbar() {
   useEffect(() => {
     const fetchUnreviewedCount = async () => {
       try {
-        const response = await fetch('/api/reviews/unreviewed-count');
+        const response = await fetch('/api/reviews/unreviewed-count', {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           setUnreviewedCount(data.count);
+          console.log('Unreviewed count:', data.count); // Debug log
         }
       } catch (error) {
         console.error('Error fetching unreviewed count:', error);
       }
     };
 
-    fetchUnreviewedCount();
-  }, []);
+    // Only fetch if user is authenticated
+    if (status === 'authenticated') {
+      fetchUnreviewedCount();
+    } else {
+      // Reset count when not authenticated
+      setUnreviewedCount(0);
+    }
+  }, [status]);
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -211,7 +223,7 @@ export default function Navbar() {
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-[#472D2D]/20 backdrop-blur-sm">
                       <Link 
                         href="/profile" 
-                        className={`flex items-center px-4 py-3 text-sm transition-all duration-300 hover:bg-gray-100 ${
+                        className={`flex items-center px-4 py-3 text-sm transition-all duration-300 hover:bg-gray-100 relative ${
                           isActive('/profile')
                             ? 'bg-gradient-to-r from-coklat-terang/20 to-coklat-terang/10 text-coklat-tua font-semibold'
                             : 'text-gray-700 hover:bg-gradient-to-r hover:from-coklat-terang/20 hover:to-coklat-terang/10'
@@ -221,6 +233,11 @@ export default function Navbar() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         {content.navbar.userMenu.profile}
+                        {unreviewedCount > 0 && (
+                          <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreviewedCount}
+                          </span>
+                        )}
                       </Link>
                       <Link 
                         href="/orders" 

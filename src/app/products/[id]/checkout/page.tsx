@@ -814,7 +814,7 @@ export default function CheckoutPage() {
                     <button
                       key={method.id}
                       onClick={() => handleBankSelect(method.id)}
-                      className={`w-full p-4 border rounded-lg flex items-center space-x-4 ${
+                      className={`cursor-pointer w-full p-4 border rounded-lg flex items-center space-x-4 ${
                         selectedBank === method.id
                           ? 'border-[#472D2D]'
                           : 'border-gray-200'
@@ -844,7 +844,7 @@ export default function CheckoutPage() {
               <button
                 onClick={() => setShowPaymentModal(true)}
                 disabled={!selectedBank}
-                className={`w-full px-4 py-3 bg-[#472D2D] text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`cursor-pointer w-full px-4 py-3 bg-[#472D2D] text-white rounded-lg font-medium hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 Bayar Sekarang
               </button>

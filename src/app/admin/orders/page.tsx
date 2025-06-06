@@ -216,7 +216,7 @@ export default function AdminOrdersPage() {
   );
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <h1 className="text-2xl font-bold mb-6 text-[#472D2D]">Kelola Pemesanan</h1>
       
       {/* Filter dan Sort Controls */}
@@ -249,19 +249,19 @@ export default function AdminOrdersPage() {
       </div>
 
       {error && <div className="mb-4 text-red-600">{error}</div>}
-      <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
+      <div className="bg-white rounded-lg shadow-md">
+        <table className="w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-20">Barang</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-16">Qty</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase">Nama</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase">Email</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase">No. Telp</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-64">Alamat Pengiriman</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-24">Bukti</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-32">Total</th>
-              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-32">Status</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-32">Barang</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-8">Qty</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-20">Nama</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-28">Email</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-14">No. Telp</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-28">Alamat Pengiriman</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-12">Bukti</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-20">Total</th>
+              <th className="px-2 py-2 text-center font-medium text-gray-500 uppercase w-20">Status</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -281,21 +281,32 @@ export default function AdminOrdersPage() {
                     router.push(`/admin/orders/${order.id}`);
                   }}
                 >
-                  <td className="px-2 py-2 text-center">
-                    <div className="w-12 h-12 relative mx-auto">
-                      <Image
-                        src={order.items?.[0]?.product?.images?.[0] || "/images/placeholder.png"}
-                        alt={order.items?.[0]?.product?.name || "Product"}
-                        fill
-                        className="object-cover rounded"
-                      />
-                    </div>
-                    <div className="truncate max-w-[80px] mx-auto text-xs mt-1">
-                      {order.items?.[0]?.product?.name || "No product"}
+                  <td className="px-2 py-2">
+                    <div className="space-y-2">
+                      {order.items.map((item, index) => (
+                        <div key={item.id} className="flex items-center gap-2">
+                          <div className="w-12 h-12 relative">
+                            <Image
+                              src={item.product.images[0] || "/images/placeholder.png"}
+                              alt={item.product.name}
+                              fill
+                              className="object-cover rounded"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-xs font-medium text-gray-900 truncate max-w-[120px]">
+                              {item.product.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Qty: {item.quantity}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </td>
                   <td className="px-2 py-2 text-center">
-                    {order.items?.reduce((total, item) => total + (item?.quantity || 0), 0) || 0}
+                    {order.items.reduce((total, item) => total + item.quantity, 0)}
                   </td>
                   <td className="px-2 py-2">{order.address.fullName}</td>
                   <td className="px-2 py-2">{order.user.email}</td>

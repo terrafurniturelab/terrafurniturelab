@@ -47,7 +47,7 @@ export default function ProductDetailPage() {
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
   const { setIsLoading: setGlobalIsLoading } = useLoading();
 
   useEffect(() => {
@@ -101,9 +101,41 @@ export default function ProductDetailPage() {
     setSelectedImageIdx((prev) => (prev === (product?.images.length || 1) - 1 ? 0 : prev + 1));
   };
 
-  const handleAddToCart = () => {
-    // Implement add to cart functionality
-    console.log('Adding to cart:', { product, quantity });
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    try {
+      // Check if user is logged in
+      if (!session) {
+        // Store the intended destination
+        sessionStorage.setItem('redirectAfterLogin', `/products/${product.id}`);
+        // Redirect to login
+        window.location.href = '/login';
+        return;
+      }
+
+      // Add to cart using API
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: quantity
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add to cart');
+      }
+
+      // Show success modal
+      setShowCartModal(true);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Gagal menambahkan ke keranjang');
+    }
   };
 
   const handleBuyNow = () => {
@@ -144,35 +176,6 @@ export default function ProductDetailPage() {
     
     // Redirect to checkout page with product ID
     window.location.href = `/products/${product.id}/checkout`;
-  };
-
-  const handleSubmitReview = async (reviewData: { rating: number; comment: string }) => {
-    try {
-      const response = await fetch(`/api/products/${params.id}/reviews`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(reviewData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit review');
-      }
-
-      // Show success modal
-      setShowSuccessModal(true);
-
-      // Refresh product data to show new review
-      const updatedProductResponse = await fetch(`/api/products/${params.id}`);
-      if (updatedProductResponse.ok) {
-        const updatedProduct = await updatedProductResponse.json();
-        setProduct(updatedProduct);
-      }
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('Failed to submit review');
-    }
   };
 
   if (error || !product) {
@@ -397,9 +400,9 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      {/* Cart Success Modal */}
+      {showCartModal && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
@@ -407,14 +410,22 @@ export default function ProductDetailPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Ulasan Berhasil Dikirim</h3>
-              <p className="text-sm text-gray-500 mb-4">Terima kasih atas ulasan Anda!</p>
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="w-full bg-[#472D2D] text-white py-2 px-4 rounded-lg hover:bg-[#382525] transition-colors"
-              >
-                Tutup
-              </button>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Berhasil Ditambahkan ke Keranjang</h3>
+              <p className="text-sm text-gray-500 mb-4">Produk telah ditambahkan ke keranjang belanja Anda</p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setShowCartModal(false)}
+                  className="flex-1 border border-[#472D2D] text-[#472D2D] py-2 px-4 rounded-lg hover:bg-[#472D2D] hover:text-white transition-colors"
+                >
+                  Lanjut Belanja
+                </button>
+                <Link
+                  href="/cart"
+                  className="flex-1 bg-[#472D2D] text-white py-2 px-4 rounded-lg hover:bg-[#382525] transition-colors text-center"
+                >
+                  Lihat Keranjang
+                </Link>
+              </div>
             </div>
           </div>
         </div>

@@ -207,4 +207,41 @@ export async function POST(request: Request) {
     console.error('Error adding to cart:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
+}
+
+export async function DELETE() {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        cart: true,
+      },
+    });
+
+    if (!user) {
+      return new NextResponse('User not found', { status: 404 });
+    }
+
+    if (!user.cart) {
+      return new NextResponse('Cart not found', { status: 404 });
+    }
+
+    // Delete all cart items
+    await prisma.cartItem.deleteMany({
+      where: {
+        cartId: user.cart.id,
+      },
+    });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
 } 

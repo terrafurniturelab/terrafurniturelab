@@ -11,49 +11,52 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get delivered orders that haven't been reviewed
-    const unreviewedOrders = await prisma.checkout.findMany({
+    // First get all delivered orders
+    const deliveredOrders = await prisma.checkout.findMany({
       where: {
         userId: session.user.id,
-        state: 'DELIVERED',
-        items: {
-          some: {
-            product: {
-              reviews: {
-                none: {
-                  userId: session.user.id
-                }
-              }
-            }
-          }
-        }
+        state: 'DELIVERED'
       },
       include: {
         items: {
           include: {
-            product: true
+            product: {
+              include: {
+                reviews: true
+              }
+            }
           }
         }
       }
     });
 
+    console.log('Total delivered orders:', deliveredOrders.length);
+
     // Count unique products that need review
     const productsToReview = new Set();
-    unreviewedOrders.forEach(order => {
+    deliveredOrders.forEach(order => {
       order.items.forEach(item => {
-        productsToReview.add(item.productId);
+        // Check if the product hasn't been reviewed by this user
+        const hasReviewed = item.product.reviews.some(review => review.userId === session.user.id);
+        if (!hasReviewed) {
+          productsToReview.add(item.productId);
+          console.log('Product needs review:', item.product.name);
+        }
       });
     });
 
+    console.log('Products to review:', productsToReview.size);
+
     return NextResponse.json({ 
       count: productsToReview.size,
-      orders: unreviewedOrders.map(order => ({
+      orders: deliveredOrders.map(order => ({
         id: order.id,
         createdAt: order.createdAt,
         items: order.items.map(item => ({
           productId: item.productId,
           productName: item.product.name,
-          quantity: item.quantity
+          quantity: item.quantity,
+          hasReviewed: item.product.reviews.some(review => review.userId === session.user.id)
         }))
       }))
     });

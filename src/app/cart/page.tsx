@@ -99,14 +99,14 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (!session) {
       // Store the intended destination
-      sessionStorage.setItem('redirectAfterLogin', '/checkout');
+      sessionStorage.setItem('redirectAfterLogin', '/cart/checkout');
       // Redirect to login
       window.location.href = '/login';
       return;
     }
     
     // Redirect to checkout page
-    router.push('/checkout');
+    router.push('/cart/checkout');
   };
 
   const subtotal = cartItems.reduce(
@@ -126,7 +126,7 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50 pt-8 pb-16 mt-22">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center py-12">
-            <p className="text-gray-600">Loading cart...</p>
+            <p className="text-gray-600">Memuat keranjang belanja...</p>
           </div>
         </div>
       </div>
@@ -221,7 +221,7 @@ export default function CartPage() {
                   <div className="border-t pt-4">
                     <button
                       onClick={handleCheckout}
-                      className="w-full bg-[#472D2D] text-white py-3 rounded-lg font-semibold hover:bg-[#382525] transition-colors"
+                      className="cursor-pointer w-full bg-[#472D2D] text-white py-3 rounded-lg font-semibold hover:bg-[#382525] transition-colors"
                     >
                       Lanjut ke Pembayaran
                     </button>
