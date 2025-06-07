@@ -9,9 +9,10 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-700">
+    <div className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative z-0" style={{ backgroundImage: 'url(/bg.jpg)' }}>
+      <div className="absolute inset-0 bg-white opacity-60 z-0"></div>
       <NavbarAuth />
-      <main className='h-full bg-gray-700'>
+      <main className='z-10'>
         {children}
       </main>
     </div>

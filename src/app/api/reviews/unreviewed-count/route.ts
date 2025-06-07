@@ -11,7 +11,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // First get all delivered orders
+    // Get all delivered orders
     const deliveredOrders = await prisma.checkout.findMany({
       where: {
         userId: session.user.id,
@@ -22,7 +22,11 @@ export async function GET() {
           include: {
             product: {
               include: {
-                reviews: true
+                reviews: {
+                  where: {
+                    userId: session.user.id
+                  }
+                }
               }
             }
           }
@@ -30,25 +34,34 @@ export async function GET() {
       }
     });
 
-    console.log('Total delivered orders:', deliveredOrders.length);
-
-    // Count unique products that need review
-    const productsToReview = new Set();
+    // Count unreviewed items per order
+    const unreviewedItems = [];
     deliveredOrders.forEach(order => {
       order.items.forEach(item => {
-        // Check if the product hasn't been reviewed by this user
-        const hasReviewed = item.product.reviews.some(review => review.userId === session.user.id);
+        // Check if this specific order item hasn't been reviewed
+        // A review is considered for this order if it was created after the order
+        const hasReviewed = item.product.reviews.some(review => 
+          review.createdAt > order.createdAt
+        );
+        
         if (!hasReviewed) {
-          productsToReview.add(item.productId);
-          console.log('Product needs review:', item.product.name);
+          unreviewedItems.push({
+            orderId: order.id,
+            productId: item.productId,
+            productName: item.product.name,
+            orderDate: order.createdAt
+          });
+          console.log('Item needs review:', {
+            orderId: order.id,
+            productName: item.product.name,
+            orderDate: order.createdAt
+          });
         }
       });
     });
 
-    console.log('Products to review:', productsToReview.size);
-
     return NextResponse.json({ 
-      count: productsToReview.size,
+      count: unreviewedItems.length,
       orders: deliveredOrders.map(order => ({
         id: order.id,
         createdAt: order.createdAt,
@@ -56,7 +69,9 @@ export async function GET() {
           productId: item.productId,
           productName: item.product.name,
           quantity: item.quantity,
-          hasReviewed: item.product.reviews.some(review => review.userId === session.user.id)
+          hasReviewed: item.product.reviews.some(review => 
+            review.createdAt > order.createdAt
+          )
         }))
       }))
     });

@@ -194,7 +194,7 @@ export default function Register() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]" 
                 placeholder="Masukkan nama lengkap" 
                 required
                 disabled={isLoading}
@@ -207,7 +207,7 @@ export default function Register() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]" 
                 placeholder="Masukkan email" 
                 required
                 disabled={isLoading}
@@ -220,7 +220,7 @@ export default function Register() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]" 
                 placeholder="Masukkan kata sandi" 
                 required
                 disabled={isLoading}
@@ -233,7 +233,7 @@ export default function Register() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]" 
                 placeholder="Masukkan ulang kata sandi" 
                 required
                 disabled={isLoading}
@@ -261,7 +261,7 @@ export default function Register() {
                   maxLength={6}
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]"
                   placeholder="Masukkan 6 digit token"
                   required
                   disabled={isLoading}

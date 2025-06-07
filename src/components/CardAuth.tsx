@@ -9,8 +9,7 @@ interface CardAuthProps {
 
 export default function CardAuth({ title, subtitle, children }: CardAuthProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md text-[#553939]">
+      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md text-[#553939] mt-16">
         <div className="flex flex-col items-center mb-6">
           <Image 
             src="/logo-1.png" 
@@ -25,6 +24,5 @@ export default function CardAuth({ title, subtitle, children }: CardAuthProps) {
         </div>
         {children}
       </div>
-    </div>
   );
 } 

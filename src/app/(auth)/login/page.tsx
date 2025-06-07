@@ -89,7 +89,7 @@ export default function Login() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]" 
               placeholder="Masukkan email" 
               required
               disabled={isLoading}
@@ -102,14 +102,14 @@ export default function Login() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="mt-1 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coklatmuda" 
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]" 
               placeholder="Masukkan kata sandi" 
               required
               disabled={isLoading}
             />
           </div>
           <div className="flex justify-end">
-            <Link href="/forgot-password" className="text-sm text-coklatmuda hover:text-[#553939]">
+            <Link href="/forgot-password" className="text-sm text-[#472D2D] hover:text-[#382525]">
               Lupa kata sandi?
             </Link>
           </div>

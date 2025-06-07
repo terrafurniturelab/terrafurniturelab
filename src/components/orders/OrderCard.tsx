@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Package, ShoppingBag, Truck, CheckCircle, Clock, XCircle, MessageCircle, Star } from "lucide-react";
+import { Package, ShoppingBag, Truck, CheckCircle, Clock, XCircle, MessageCircle, Star, Loader2 } from "lucide-react";
 
 type CheckoutItemWithProduct = CheckoutItem & {
   product: Product;
@@ -64,19 +64,23 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(5);
   const [selectedItem, setSelectedItem] = useState<CheckoutItemWithProduct | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleReviewSubmit = async () => {
-    if (!review) {
+    if (!review || !selectedItem) {
       toast.error("Mohon isi ulasan Anda");
       return;
     }
 
     try {
+      setIsSubmitting(true);
       const response = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId: order.id,
+          productId: selectedItem.productId,
           review,
           rating,
         }),
@@ -104,13 +108,16 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
         }));
       }
 
-      toast.success("Ulasan berhasil dikirim");
       setReviewDialogOpen(false);
+      setShowSuccessModal(true);
       setReview("");
       setRating(5);
+      setSelectedItem(null);
     } catch (error) {
       console.error("Error submitting review:", error);
       toast.error("Gagal mengirim ulasan");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -153,7 +160,7 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
                 </div>
                 <div className="flex flex-col items-end">
                   <p className="text-base font-semibold">
-                    Total:
+                    Subtotal:
                     <span className="font-bold text-xl sm:text-2xl ml-2 text-[#472D2D]">
                       Rp{((item.quantity * (item.product?.price || 0))).toLocaleString()}
                     </span>
@@ -164,12 +171,15 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
                         {!item.hasReview && (
                           <Button
                             variant="outline"
-                            className="mt-2 flex items-center gap-2 bg-[#472D2D] text-white cursor-pointer w-full sm:w-auto"
+                            className="mt-2 flex items-center gap-2 bg-[#472D2D] text-white cursor-pointer w-full sm:w-auto relative"
                             onClick={() => {
                               setSelectedItem(item);
                               setReviewDialogOpen(true);
                             }}
                           >
+                            <div className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                              !
+                            </div>
                             <Star className="h-4 w-4" />
                             Beri Ulasan
                           </Button>
@@ -181,6 +191,14 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
               </div>
             </div>
           ))}
+          <div className="mt-6 p-4 bg-[#472D2D]/5 rounded-xl">
+            <p className="sm:text-lg text-xs sm:text-right text-left font-semibold">
+              Total Keseluruhan:
+              <span className="font-bold text-2xl ml-2 text-[#472D2D]">
+                Rp{order.items.reduce((total, item) => total + (item.quantity * (item.product?.price || 0)), 0).toLocaleString()}
+              </span>
+            </p>
+          </div>
           <div className="flex flex-wrap gap-3 pt-4 border-t justify-end">
             <Button
               variant="outline"
@@ -219,6 +237,7 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
                     key={value}
                     onClick={() => setRating(value)}
                     className="focus:outline-none transform transition-transform hover:scale-110"
+                    disabled={isSubmitting}
                   >
                     <Star
                       className={`h-8 w-8 transition-colors ${
@@ -248,6 +267,7 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
                 className="min-h-[150px] resize-none border-coklat-terang/20 focus:border-coklat-terang focus:ring-coklat-terang/20"
+                disabled={isSubmitting}
               />
             </div>
             <div className="flex gap-3 pt-2">
@@ -260,16 +280,47 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
                   setSelectedItem(null);
                 }}
                 className="flex-1 border-coklat-terang/20 text-coklat-tua hover:bg-coklat-terang/10"
+                disabled={isSubmitting}
               >
                 Batal
               </Button>
               <Button
                 onClick={handleReviewSubmit}
                 className="flex-1 bg-[#472D2D] text-white hover:bg-[#472D2D]/90"
+                disabled={isSubmitting}
               >
-                Kirim Ulasan
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Mengirim...
+                  </>
+                ) : (
+                  'Kirim Ulasan'
+                )}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-[425px] bg-white rounded-xl">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-xl font-semibold text-[#472D2D] text-center">Ulasan Terkirim!</DialogTitle>
+            <div className="flex justify-center">
+              <CheckCircle className="h-16 w-16 text-green-500" />
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Terima kasih telah berbagi pengalaman Anda dengan produk ini
+            </p>
+          </DialogHeader>
+          <div className="flex justify-center pt-4">
+            <Button
+              onClick={() => setShowSuccessModal(false)}
+              className="bg-[#472D2D] text-white hover:bg-[#472D2D]/90"
+            >
+              Tutup
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

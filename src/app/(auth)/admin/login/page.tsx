@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import CardAuth from '@/components/CardAuth';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -48,61 +50,70 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-[#472D2D]">
-            Admin Login
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]"
-              />
-            </div>
-          </div>
-
+    <>
+      <LoadingScreen isLoading={isLoading} />
+        <CardAuth title="Admin Login" subtitle="Silahkan masukkan email dan password">  
           <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#472D2D] hover:bg-[#382525] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#472D2D] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Memproses...' : 'Masuk'}
-            </button>
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+              {error && (
+                <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-[#472D2D]">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={email}
+                    placeholder="Masukkan email"
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-[#472D2D]">
+                    Kata Sandi
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    placeholder="Masukkan kata sandi"
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#472D2D] focus:border-[#472D2D]"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => router.push('/admin/forgot-password')}
+                    className="cursor-pointer text-sm text-[#472D2D] hover:text-[#382525]"
+                  >
+                    Lupa kata sandi?
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-2 bg-coklat text-white rounded-lg font-semibold bg-[#553939] hover:bg-[#3f2a2a] transition cursor-pointer disabled:opacity-50"
+                >
+                  {isLoading ? 'Memproses...' : 'Masuk'}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
-    </div>
+        </CardAuth>
+    </>
   );
 } 

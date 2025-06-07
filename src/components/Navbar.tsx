@@ -233,11 +233,6 @@ export default function Navbar() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         {content.navbar.userMenu.profile}
-                        {unreviewedCount > 0 && (
-                          <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                            {unreviewedCount}
-                          </span>
-                        )}
                       </Link>
                       <Link 
                         href="/orders" 
