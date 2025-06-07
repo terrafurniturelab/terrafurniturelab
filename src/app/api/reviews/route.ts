@@ -37,11 +37,12 @@ export async function POST(request: Request) {
       return new NextResponse("Order or product not found or not eligible for review", { status: 404 });
     }
 
-    // Check if user has already reviewed this product for this order
+    // Check if user has already reviewed this product for this specific order
     const existingReview = await prisma.review.findFirst({
       where: {
         userId: session.user.id,
         productId: productId,
+        orderId: orderId,
         createdAt: {
           gt: order.createdAt
         }
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
     });
 
     if (existingReview) {
-      return new NextResponse("You have already reviewed this product", { status: 400 });
+      return new NextResponse("You have already reviewed this product for this order", { status: 400 });
     }
 
     // Create review for this product
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
         comment: review,
         productId: productId,
         userId: session.user.id,
+        orderId: orderId // Add orderId to track which order this review is for
       }
     });
 

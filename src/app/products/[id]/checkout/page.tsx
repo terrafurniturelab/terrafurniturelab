@@ -166,55 +166,38 @@ export default function CheckoutPage() {
   }, []);
 
   const fetchProvinces = async () => {
-    // Check cache first
-    const cachedProvinces = locationCache.provinces.get('all');
-    if (cachedProvinces) {
-      setProvinces(cachedProvinces);
-      return;
-    }
-
-    setLoadingLocations(prev => ({ ...prev, provinces: true }));
     try {
-      const res = await fetch('/api/rajaongkir?type=province', {
-        cache: 'force-cache' // Enable caching for province data
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.details || 'Failed to fetch provinces');
+      setLoadingLocations(prev => ({ ...prev, provinces: true }));
+      const response = await fetch('/api/emsifa?type=province');
+      if (!response.ok) {
+        throw new Error('Failed to fetch provinces');
       }
-      const data = await res.json();
-      if (!data.rajaongkir?.results) {
-        throw new Error('Invalid response format from Raja Ongkir API');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setProvinces(data);
+      } else {
+        throw new Error('Invalid response format');
       }
-      setProvinces(data.rajaongkir.results);
-      // Cache the results
-      locationCache.provinces.set('all', data.rajaongkir.results);
     } catch (error) {
       console.error('Error fetching provinces:', error);
-      alert(`Error loading provinces: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoadingLocations(prev => ({ ...prev, provinces: false }));
     }
   };
 
   const fetchCities = async (provinceId: string) => {
-    // Check cache first
-    const cachedCities = locationCache.cities.get(provinceId);
-    if (cachedCities) {
-      setCities(cachedCities);
-      return;
-    }
-
-    setLoadingLocations(prev => ({ ...prev, cities: true }));
     try {
-      const res = await fetch(`/api/rajaongkir?type=city&id=${provinceId}`, {
-        cache: 'force-cache' // Enable caching for city data
-      });
-      if (!res.ok) throw new Error('Failed to fetch cities');
-      const data = await res.json();
-      setCities(data.rajaongkir.results);
-      // Cache the results
-      locationCache.cities.set(provinceId, data.rajaongkir.results);
+      setLoadingLocations(prev => ({ ...prev, cities: true }));
+      const response = await fetch(`/api/emsifa?type=city&id=${provinceId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch cities');
+      }
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setCities(data);
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
       console.error('Error fetching cities:', error);
     } finally {
@@ -223,23 +206,18 @@ export default function CheckoutPage() {
   };
 
   const fetchDistricts = async (cityId: string) => {
-    // Check cache first
-    const cachedDistricts = locationCache.districts.get(cityId);
-    if (cachedDistricts) {
-      setDistricts(cachedDistricts);
-      return;
-    }
-
-    setLoadingLocations(prev => ({ ...prev, districts: true }));
     try {
-      const res = await fetch(`/api/rajaongkir?type=district&id=${cityId}`, {
-        cache: 'force-cache' // Enable caching for district data
-      });
-      if (!res.ok) throw new Error('Failed to fetch districts');
-      const data = await res.json();
-      setDistricts(data.rajaongkir.results);
-      // Cache the results
-      locationCache.districts.set(cityId, data.rajaongkir.results);
+      setLoadingLocations(prev => ({ ...prev, districts: true }));
+      const response = await fetch(`/api/emsifa?type=district&id=${cityId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch districts');
+      }
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setDistricts(data);
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
       console.error('Error fetching districts:', error);
     } finally {
@@ -422,6 +400,7 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(addressData),
       });
 
@@ -455,6 +434,7 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(checkoutPayload),
       });
 
@@ -481,6 +461,7 @@ export default function CheckoutPage() {
 
       const res = await fetch(`/api/checkout/${checkoutResponse.checkout.id}/payment`, {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       });
 

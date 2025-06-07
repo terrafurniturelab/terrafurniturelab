@@ -56,7 +56,20 @@ export default function OrdersPage() {
       const response = await fetch(`/api/orders?status=${currentStatus}`);
       if (!response.ok) throw new Error("Failed to fetch orders");
       const data = await response.json();
-      setOrders(data);
+      
+      // Fetch review status for each order's items
+      const ordersWithReviewStatus = await Promise.all(
+        data.map(async (order: OrderWithDetails) => {
+          const orderResponse = await fetch(`/api/orders/${order.id}`);
+          if (orderResponse.ok) {
+            const orderData = await orderResponse.json();
+            return orderData;
+          }
+          return order;
+        })
+      );
+      
+      setOrders(ordersWithReviewStatus);
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Gagal memuat pesanan");
@@ -77,8 +90,6 @@ export default function OrdersPage() {
   };
 
   const handleStatusChange = (status: string) => {
-    // Convert "Selesai" to "DELIVERED" for API
-    const apiStatus = status === "selesai" ? "DELIVERED" : status.toUpperCase();
     router.push(`/orders?status=${status}`);
   };
 

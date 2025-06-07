@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,9 +13,11 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { id } = await context.params;
+
     const order = await prisma.checkout.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
       include: {
@@ -38,6 +40,10 @@ export async function GET(
           where: {
             userId: session.user.id,
             productId: item.productId,
+            orderId: order.id,
+            createdAt: {
+              gt: order.createdAt
+            }
           },
         });
         return {

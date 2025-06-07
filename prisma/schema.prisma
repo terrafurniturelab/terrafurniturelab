@@ -145,6 +145,7 @@ model Checkout {
   admin         Admin        @relation(fields: [adminId], references: [id])
   adminId       String
   items         CheckoutItem[]
+  reviews       Review[]
 }
 
 model CheckoutItem {
@@ -232,4 +233,6 @@ model Review {
   productId String
   user      User     @relation(fields: [userId], references: [id])
   userId    String
+  order     Checkout? @relation(fields: [orderId], references: [id])
+  orderId   String?
 } 

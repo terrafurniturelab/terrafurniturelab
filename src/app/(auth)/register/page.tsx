@@ -105,12 +105,12 @@ export default function Register() {
       }
 
       setModalTitle("Registrasi berhasil");
-      setModalDesc("Selamat datang! Akun Anda telah berhasil dibuat.");
+      setModalDesc("Silahkan login untuk melanjutkan");
       setModalStatus('success');
       setModalOpen(true);
       
       setTimeout(() => {
-        router.push('/');
+        router.push('/login');
       }, 2000);
     } catch (error) {
       setModalTitle("Verifikasi gagal");
@@ -154,31 +154,6 @@ export default function Register() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleGoogleError = (message: string) => {
-    setModalTitle("Registrasi gagal");
-    setModalDesc(message);
-    setModalStatus('error');
-    setModalOpen(true);
-  };
-
-  const handleGoogleSuccess = () => {
-    setModalTitle("Registrasi berhasil");
-    setModalDesc("Selamat datang! Akun Anda telah berhasil dibuat.");
-    setModalStatus('success');
-    setModalOpen(true);
-
-    setTimeout(async () => {
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false
-      });
-      if (result?.ok) {
-        router.push('/');
-      }
-    }, 2000);
   };
 
   return (

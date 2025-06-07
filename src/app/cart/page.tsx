@@ -69,11 +69,15 @@ export default function CartPage() {
         throw new Error('Failed to update quantity');
       }
 
+      const data = await response.json();
       setCartItems(prevItems =>
         prevItems.map(item =>
           item.id === itemId ? { ...item, quantity: newQuantity } : item
         )
       );
+
+      // Dispatch cart count update event
+      window.dispatchEvent(new CustomEvent('updateCartCount', { detail: { count: data.totalQuantity } }));
     } catch (error) {
       console.error('Error updating quantity:', error);
     }
@@ -90,7 +94,11 @@ export default function CartPage() {
         throw new Error('Failed to remove item');
       }
 
+      const data = await response.json();
       setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
+
+      // Dispatch cart count update event
+      window.dispatchEvent(new CustomEvent('updateCartCount', { detail: { count: data.totalQuantity } }));
     } catch (error) {
       console.error('Error removing item:', error);
     }

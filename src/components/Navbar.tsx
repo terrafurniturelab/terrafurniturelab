@@ -17,6 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
   const [unreviewedCount, setUnreviewedCount] = useState(0);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,14 +38,20 @@ export default function Navbar() {
       setUnreviewedCount(event.detail.count);
     };
 
+    const handleCartCountUpdate = (event: CustomEvent) => {
+      setCartCount(event.detail.count);
+    };
+
     window.addEventListener('scroll', handleScroll);
     document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener('updateUnreviewedCount', handleUnreviewedCountUpdate as EventListener);
+    window.addEventListener('updateCartCount', handleCartCountUpdate as EventListener);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('updateUnreviewedCount', handleUnreviewedCountUpdate as EventListener);
+      window.removeEventListener('updateCartCount', handleCartCountUpdate as EventListener);
     };
   }, []);
 
@@ -60,19 +67,37 @@ export default function Navbar() {
         if (response.ok) {
           const data = await response.json();
           setUnreviewedCount(data.count);
-          console.log('Unreviewed count:', data.count); // Debug log
         }
       } catch (error) {
         console.error('Error fetching unreviewed count:', error);
       }
     };
 
+    const fetchCartCount = async () => {
+      try {
+        const response = await fetch('/api/cart/count', {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCartCount(data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching cart count:', error);
+      }
+    };
+
     // Only fetch if user is authenticated
     if (status === 'authenticated') {
       fetchUnreviewedCount();
+      fetchCartCount();
     } else {
-      // Reset count when not authenticated
+      // Reset counts when not authenticated
       setUnreviewedCount(0);
+      setCartCount(0);
     }
   }, [status]);
 
@@ -188,9 +213,16 @@ export default function Navbar() {
                     isScrolled ? 'text-[#472D2D]' : 'text-white'
                   }`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
+                  <div className="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                  </div>
                   {isActive('/cart') && (
                     <span className={`absolute -bottom-1 left-0 w-full h-0.5 transition-colors duration-300 ${
                       isScrolled ? 'bg-[#472D2D]' : 'bg-white'
@@ -421,11 +453,16 @@ export default function Navbar() {
                         : 'text-white hover:text-coklat-terang'
                   }`}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center relative">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     Cart
+                    {cartCount > 0 && (
+                      <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
                   </div>
                 </Link>
                 <div className="px-3 py-2">
@@ -458,11 +495,6 @@ export default function Navbar() {
                 >
                   <div className="relative">
                     {content.navbar.userMenu.profile}
-                    {unreviewedCount > 0 && (
-                      <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {unreviewedCount}
-                      </span>
-                    )}
                   </div>
                 </Link>
                 <Link 

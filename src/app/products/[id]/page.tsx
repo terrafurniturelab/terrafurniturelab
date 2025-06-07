@@ -105,24 +105,15 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     try {
-      // Check if user is logged in
-      if (!session) {
-        // Store the intended destination
-        sessionStorage.setItem('redirectAfterLogin', `/products/${product.id}`);
-        // Redirect to login
-        window.location.href = '/login';
-        return;
-      }
-
-      // Add to cart using API
-      const response = await fetch('/api/cart', {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      const response = await fetch(`${baseUrl}/api/cart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           productId: product.id,
-          quantity: quantity
+          quantity: quantity,
         }),
       });
 
@@ -130,11 +121,13 @@ export default function ProductDetailPage() {
         throw new Error('Failed to add to cart');
       }
 
-      // Show success modal
+      const data = await response.json();
       setShowCartModal(true);
+
+      // Dispatch cart count update event
+      window.dispatchEvent(new CustomEvent('updateCartCount', { detail: { count: data.totalQuantity } }));
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Gagal menambahkan ke keranjang');
     }
   };
 

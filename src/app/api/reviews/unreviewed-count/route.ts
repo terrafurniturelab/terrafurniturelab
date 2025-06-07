@@ -20,17 +20,20 @@ export async function GET() {
       include: {
         items: {
           include: {
-            product: {
-              include: {
-                reviews: {
-                  where: {
-                    userId: session.user.id
-                  }
-                }
-              }
-            }
+            product: true
           }
         }
+      }
+    });
+
+    // Get all reviews by the user
+    const userReviews = await prisma.review.findMany({
+      where: {
+        userId: session.user.id
+      },
+      select: {
+        productId: true,
+        createdAt: true
       }
     });
 
@@ -38,21 +41,15 @@ export async function GET() {
     const unreviewedItems = [];
     deliveredOrders.forEach(order => {
       order.items.forEach(item => {
-        // Check if this specific order item hasn't been reviewed
-        // A review is considered for this order if it was created after the order
-        const hasReviewed = item.product.reviews.some(review => 
-          review.createdAt > order.createdAt
+        // Check if this product has been reviewed in any order
+        const hasReviewed = userReviews.some(review => 
+          review.productId === item.productId && review.createdAt > order.createdAt
         );
         
         if (!hasReviewed) {
           unreviewedItems.push({
             orderId: order.id,
             productId: item.productId,
-            productName: item.product.name,
-            orderDate: order.createdAt
-          });
-          console.log('Item needs review:', {
-            orderId: order.id,
             productName: item.product.name,
             orderDate: order.createdAt
           });
@@ -69,8 +66,8 @@ export async function GET() {
           productId: item.productId,
           productName: item.product.name,
           quantity: item.quantity,
-          hasReviewed: item.product.reviews.some(review => 
-            review.createdAt > order.createdAt
+          hasReviewed: userReviews.some(review => 
+            review.productId === item.productId && review.createdAt > order.createdAt
           )
         }))
       }))

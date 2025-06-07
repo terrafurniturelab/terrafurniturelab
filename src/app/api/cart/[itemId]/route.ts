@@ -5,10 +5,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { itemId: string } }
+  context: { params: { itemId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const params = await context.params;
+    const itemId = params.itemId;
 
     if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
@@ -39,7 +41,7 @@ export async function PATCH(
     // Check if cart item exists and belongs to user's cart
     const cartItem = await prisma.cartItem.findFirst({
       where: {
-        id: params.itemId,
+        id: itemId,
         cartId: user.cart.id,
       },
       include: {
@@ -58,7 +60,7 @@ export async function PATCH(
 
     // Update cart item
     const updatedCartItem = await prisma.cartItem.update({
-      where: { id: params.itemId },
+      where: { id: itemId },
       data: { quantity },
       include: {
         product: {
@@ -73,7 +75,24 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(updatedCartItem);
+    // Get updated cart count
+    const updatedCart = await prisma.cart.findUnique({
+      where: { id: user.cart.id },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!updatedCart) {
+      return new NextResponse('Failed to fetch updated cart', { status: 500 });
+    }
+
+    const totalQuantity = updatedCart.items.reduce((sum, item) => sum + item.quantity, 0);
+
+    return NextResponse.json({
+      cartItem: updatedCartItem,
+      totalQuantity,
+    });
   } catch (error) {
     console.error('Error updating cart item:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
@@ -82,10 +101,12 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { itemId: string } }
+  context: { params: { itemId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const params = await context.params;
+    const itemId = params.itemId;
 
     if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
@@ -109,7 +130,7 @@ export async function DELETE(
     // Check if cart item exists and belongs to user's cart
     const cartItem = await prisma.cartItem.findFirst({
       where: {
-        id: params.itemId,
+        id: itemId,
         cartId: user.cart.id,
       },
     });
@@ -120,10 +141,24 @@ export async function DELETE(
 
     // Delete cart item
     await prisma.cartItem.delete({
-      where: { id: params.itemId },
+      where: { id: itemId },
     });
 
-    return new NextResponse(null, { status: 204 });
+    // Get updated cart count
+    const updatedCart = await prisma.cart.findUnique({
+      where: { id: user.cart.id },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!updatedCart) {
+      return new NextResponse('Failed to fetch updated cart', { status: 500 });
+    }
+
+    const totalQuantity = updatedCart.items.reduce((sum, item) => sum + item.quantity, 0);
+
+    return NextResponse.json({ totalQuantity });
   } catch (error) {
     console.error('Error deleting cart item:', error);
     return new NextResponse('Internal Server Error', { status: 500 });

@@ -107,7 +107,11 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
-        cart: true,
+        cart: {
+          include: {
+            items: true,
+          },
+        },
       },
     });
 
@@ -139,16 +143,26 @@ export async function POST(request: Request) {
           data: {
             userId: user.id,
           },
+          include: {
+            items: true,
+          },
         });
       } catch (error) {
         // If cart creation fails due to unique constraint, try to fetch existing cart
         cart = await prisma.cart.findUnique({
           where: { userId: user.id },
+          include: {
+            items: true,
+          },
         });
         if (!cart) {
           throw error;
         }
       }
+    }
+
+    if (!cart) {
+      return new NextResponse('Failed to create or fetch cart', { status: 500 });
     }
 
     // Check if product is already in cart
@@ -202,7 +216,24 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json(cartItem);
+    // Get updated cart count
+    const updatedCart = await prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!updatedCart) {
+      return new NextResponse('Failed to fetch updated cart', { status: 500 });
+    }
+
+    const totalQuantity = updatedCart.items.reduce((sum, item) => sum + item.quantity, 0);
+
+    return NextResponse.json({
+      cartItem,
+      totalQuantity,
+    });
   } catch (error) {
     console.error('Error adding to cart:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
