@@ -37,9 +37,10 @@ export async function middleware(request: NextRequest) {
   const isProfilePage = request.nextUrl.pathname === '/profile';
   const isCartPage = request.nextUrl.pathname === '/cart';
   const isOrdersPage = request.nextUrl.pathname === '/orders';
+  const isFeedbackPage = request.nextUrl.pathname === '/feedback';
 
   // If user is not logged in and trying to access protected pages
-  if (!token && (isProfilePage || isCartPage || isOrdersPage || isCheckoutPage)) {
+  if (!token && (isProfilePage || isCartPage || isOrdersPage || isCheckoutPage || isFeedbackPage)) {
     return new NextResponse(null, { status: 404 });
   }
 
@@ -58,6 +59,7 @@ export const config = {
     '/cart',
     '/orders',
     '/profile',
+    '/feedback',
     '/products/:path*/checkout',
     '/admin/:path*'
   ],

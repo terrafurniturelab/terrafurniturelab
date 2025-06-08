@@ -11,7 +11,8 @@ import {
   CubeIcon,
   ShoppingCartIcon,
   ArrowRightOnRectangleIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Kelola Kategori', href: '/admin/categories', icon: TagIcon },
   { name: 'Kelola Produk', href: '/admin/products', icon: CubeIcon },
   { name: 'Kelola Pemesanan', href: '/admin/orders', icon: ShoppingCartIcon },
+  { name: 'Kelola Feedback', href: '/admin/feedback', icon: ChatBubbleLeftRightIcon },
 ];
 
 export default function AdminSidebar() {

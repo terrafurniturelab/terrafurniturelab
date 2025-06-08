@@ -167,19 +167,19 @@ export default function Navbar() {
               )}
             </Link>
             <Link 
-              href="/about" 
+              href="/feedback" 
               className={`relative transition-colors duration-300 ${
                 isScrolled 
-                  ? isActive('/about') 
+                  ? isActive('/feedback') 
                     ? 'text-[#472D2D] font-bold border-b-2 border-[#472D2D]' 
                     : 'text-gray-700 hover:text-[#472D2D]'
-                  : isActive('/about')
+                  : isActive('/feedback')
                     ? 'text-white font-bold border-b-2 border-white'
                     : 'text-white'
               }`}
             >
-              {content.navbar.navigation.about}
-              {isActive('/about') && (
+              {content.navbar.navigation.feedback}
+              {isActive('/feedback') && (
                 <span className={`absolute -bottom-1 left-0 w-full h-0.5 transition-colors duration-300 ${
                   isScrolled ? 'bg-coklat-tua' : 'bg-white'
                 }`} />
@@ -391,18 +391,18 @@ export default function Navbar() {
               {content.navbar.navigation.categories}
             </Link>
             <Link 
-              href="/about" 
+              href="/feedback" 
               className={`block px-3 py-2 transition-colors duration-300 ${
                 isScrolled 
-                  ? isActive('/about')
+                  ? isActive('/feedback')
                     ? 'bg-coklat-terang text-coklat-tua font-semibold'
                     : 'text-gray-700 hover:text-coklat-muda hover:bg-coklat-terang'
-                  : isActive('/about')
+                  : isActive('/feedback')
                     ? 'bg-white/10 text-white font-semibold'
                     : 'text-white hover:text-coklat-terang'
               }`}
             >
-              {content.navbar.navigation.about}
+              {content.navbar.navigation.feedback}
             </Link>
             {session ? (
               <>

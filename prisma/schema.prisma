@@ -48,6 +48,7 @@ model User {
   cart          Cart?
   checkouts     Checkout[]
   reviews       Review[]
+  feedbacks     Feedback[]
 }
 
 model VerificationToken {
@@ -86,6 +87,7 @@ model Admin {
   updatedAt DateTime  @updatedAt
   products  Product[]
   checkouts Checkout[]
+  featuredFeedbacks Feedback[] @relation("FeaturedFeedbacks")
 }
 
 model Category {
@@ -202,4 +204,17 @@ model Review {
   userId    String
   order     Checkout? @relation(fields: [orderId], references: [id])
   orderId   String?
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String   @db.Text
+  isFeatured Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  featuredBy Admin?  @relation("FeaturedFeedbacks", fields: [adminId], references: [id])
+  adminId   String?
 } 
