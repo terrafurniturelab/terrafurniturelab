@@ -72,6 +72,8 @@ export default function AdminOrdersPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [processingCount, setProcessingCount] = useState(0);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const router = useRouter();
 
   const handleEditClick = (order: Checkout) => {
@@ -95,6 +97,14 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
+    // Fetch processing count
+    fetch('/api/admin/orders/count')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && typeof data.processingCount === 'number') {
+          setProcessingCount(data.processingCount);
+        }
+      });
   }, []);
 
   const handleStatusChange = async (order: Checkout, newState: string) => {
@@ -223,16 +233,56 @@ export default function AdminOrdersPage() {
       <div className="mb-4 flex gap-4 items-center">
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700">Status:</label>
-          <select
-            className="border rounded px-2 py-1 text-sm focus:ring-[#472D2D] focus:border-[#472D2D]"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="ALL">Semua Status</option>
-            {CHECKOUT_STATES.map(state => (
-              <option key={state} value={state}>{state}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <button
+              className="border rounded px-2 py-1 text-sm focus:ring-[#472D2D] focus:border-[#472D2D] min-w-[120px] flex items-center justify-between"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            >
+              {processingCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {processingCount}
+                </span>
+              )}
+              <span>{statusFilter === 'ALL' ? 'Semua Status' : statusFilter}</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {isFilterOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg">
+                <button
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 ${
+                    statusFilter === 'ALL' ? 'bg-gray-50' : ''
+                  }`}
+                  onClick={() => {
+                    setStatusFilter('ALL');
+                    setIsFilterOpen(false);
+                  }}
+                >
+                  Semua Status
+                </button>
+                {CHECKOUT_STATES.map(state => (
+                  <button
+                    key={state}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center justify-between relative ${
+                      statusFilter === state ? 'bg-gray-50' : ''
+                    }`}
+                    onClick={() => {
+                      setStatusFilter(state);
+                      setIsFilterOpen(false);
+                    }}
+                  >
+                    <span>{state}</span>
+                    {state === 'PROCESSING' && processingCount > 0 && (
+                      <span className="absolute right-0 top-1 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {processingCount}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

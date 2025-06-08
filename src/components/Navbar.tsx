@@ -6,8 +6,6 @@ import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import content from '@/content/content.json';
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, User, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -115,7 +113,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
+            <Link href="/" className="flex-shrink-0 flex items-center gap-2">
+              <Image src="/logoTF.png" alt={content.navbar.brand} width={800} height={800} className="h-11 w-auto" priority />
               <Image
                 src={isScrolled ? "/logo-1.png" : "/logo-w.png"}
                 alt={content.navbar.brand}
@@ -192,21 +191,6 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             {session ? (
               <>
-                <Link
-                  href="/chat"
-                  className={`relative transition-colors duration-300 ${
-                    isScrolled ? 'text-[#472D2D]' : 'text-white'
-                  }`}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  {isActive('/chat') && (
-                    <span className={`absolute -bottom-1 left-0 w-full h-0.5 transition-colors duration-300 ${
-                      isScrolled ? 'bg-[#472D2D]' : 'bg-white'
-                    }`} />
-                  )}
-                </Link>
                 <Link
                   href="/cart"
                   className={`relative transition-colors duration-300 ${
@@ -286,7 +270,7 @@ export default function Navbar() {
                       </Link>
                       <div className="border-t border-gray-100 my-1"></div>
                       <button
-                        onClick={() => signOut()}
+                        onClick={() => signOut({ callbackUrl: '/' })}
                         className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-300"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -423,25 +407,6 @@ export default function Navbar() {
             {session ? (
               <>
                 <Link 
-                  href="/chat"
-                  className={`block px-3 py-2 transition-colors duration-300 ${
-                    isScrolled 
-                      ? isActive('/chat')
-                        ? 'bg-coklat-terang text-coklat-tua font-semibold'
-                        : 'text-gray-700 hover:text-coklat-muda hover:bg-coklat-terang'
-                      : isActive('/chat')
-                        ? 'bg-white/10 text-white font-semibold'
-                        : 'text-white hover:text-coklat-terang'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    Chat
-                  </div>
-                </Link>
-                <Link 
                   href="/cart"
                   className={`block px-3 py-2 transition-colors duration-300 ${
                     isScrolled 
@@ -519,7 +484,7 @@ export default function Navbar() {
                   </div>
                 </Link>
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => signOut({ callbackUrl: '/' })}
                   className={`block w-full text-left px-3 py-2 transition-colors duration-300 ${
                     isScrolled 
                       ? 'text-gray-700 hover:text-coklat-muda hover:bg-coklat-terang' 

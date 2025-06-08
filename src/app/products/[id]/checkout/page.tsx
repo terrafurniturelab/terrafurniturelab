@@ -40,6 +40,16 @@ interface AddressForm {
   isManualDistrict: boolean;
 }
 
+interface FormErrors {
+  fullName?: string;
+  phoneNumber?: string;
+  province?: string;
+  city?: string;
+  kecamatan?: string;
+  kodePos?: string;
+  alamatLengkap?: string;
+}
+
 interface Location {
   id: string;
   name: string;
@@ -90,6 +100,7 @@ export default function CheckoutPage() {
     cities: false,
     districts: false,
   });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   // Cache for location data
   const locationCache = {
@@ -361,7 +372,39 @@ export default function CheckoutPage() {
     }
   };
 
+  const validateForm = () => {
+    const errors: FormErrors = {};
+    
+    if (!addressForm.fullName.trim()) {
+      errors.fullName = 'Nama lengkap wajib diisi';
+    }
+    if (!addressForm.phoneNumber.trim()) {
+      errors.phoneNumber = 'Nomor telepon wajib diisi';
+    }
+    if (!addressForm.province && !addressForm.isManualProvince) {
+      errors.province = 'Provinsi wajib diisi';
+    }
+    if (!addressForm.city && !addressForm.isManualCity) {
+      errors.city = 'Kota/Kabupaten wajib diisi';
+    }
+    if (!addressForm.kecamatan && !addressForm.isManualDistrict) {
+      errors.kecamatan = 'Kecamatan wajib diisi';
+    }
+    if (!addressForm.kodePos.trim()) {
+      errors.kodePos = 'Kode pos wajib diisi';
+    }
+    if (!addressForm.alamatLengkap.trim()) {
+      errors.alamatLengkap = 'Alamat lengkap wajib diisi';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handlePaymentSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
     if (!selectedBank || !paymentProof) {
       alert('Pilih bank dan upload bukti pembayaran');
       return;
@@ -556,9 +599,14 @@ export default function CheckoutPage() {
                     name="fullName"
                     value={addressForm.fullName}
                     onChange={handleAddressChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                      formErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     required
                   />
+                  {formErrors.fullName && (
+                    <p className="mt-1 text-sm text-red-600">{formErrors.fullName}</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
@@ -570,9 +618,14 @@ export default function CheckoutPage() {
                     name="phoneNumber"
                     value={addressForm.phoneNumber}
                     onChange={handleAddressChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                      formErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     required
                   />
+                  {formErrors.phoneNumber && (
+                    <p className="mt-1 text-sm text-red-600">{formErrors.phoneNumber}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -587,10 +640,15 @@ export default function CheckoutPage() {
                           name="province"
                           value={addressForm.province}
                           onChange={handleAddressChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                            formErrors.province ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           required
-                          placeholder="Privinsi"
+                          placeholder="Provinsi"
                         />
+                        {formErrors.province && (
+                          <p className="mt-1 text-sm text-red-600">{formErrors.province}</p>
+                        )}
                         <button
                           type="button"
                           onClick={() => setAddressForm(prev => ({ ...prev, isManualProvince: false }))}
@@ -605,7 +663,9 @@ export default function CheckoutPage() {
                         name="provinceId"
                         value={addressForm.provinceId}
                         onChange={handleAddressChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                        className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                          formErrors.province ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         required
                       >
                         <option value="">Pilih Provinsi</option>
@@ -616,6 +676,9 @@ export default function CheckoutPage() {
                         ))}
                         <option value="manual">Lainnya (Isi Manual)</option>
                       </select>
+                    )}
+                    {formErrors.province && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.province}</p>
                     )}
                   </div>
                   <div>
@@ -630,10 +693,15 @@ export default function CheckoutPage() {
                           name="city"
                           value={addressForm.city}
                           onChange={handleAddressChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                            formErrors.city ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           required
                           placeholder="Kota/Kabupaten"
                         />
+                        {formErrors.city && (
+                          <p className="mt-1 text-sm text-red-600">{formErrors.city}</p>
+                        )}
                         <button
                           type="button"
                           onClick={() => setAddressForm(prev => ({ ...prev, isManualCity: false }))}
@@ -648,7 +716,9 @@ export default function CheckoutPage() {
                         name="cityId"
                         value={addressForm.cityId}
                         onChange={handleAddressChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                        className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                          formErrors.city ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         required
                         disabled={!addressForm.provinceId && !addressForm.isManualProvince}
                       >
@@ -660,6 +730,9 @@ export default function CheckoutPage() {
                         ))}
                         <option value="manual">Lainnya (Isi Manual)</option>
                       </select>
+                    )}
+                    {formErrors.city && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.city}</p>
                     )}
                   </div>
                 </div>
@@ -676,10 +749,15 @@ export default function CheckoutPage() {
                           name="kecamatan"
                           value={addressForm.kecamatan}
                           onChange={handleAddressChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                            formErrors.kecamatan ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           required
                           placeholder="Masukkan nama kecamatan"
                         />
+                        {formErrors.kecamatan && (
+                          <p className="mt-1 text-sm text-red-600">{formErrors.kecamatan}</p>
+                        )}
                         <button
                           type="button"
                           onClick={() => setAddressForm(prev => ({ ...prev, isManualDistrict: false }))}
@@ -694,7 +772,9 @@ export default function CheckoutPage() {
                         name="kecamatanId"
                         value={addressForm.kecamatanId}
                         onChange={handleAddressChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                        className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                          formErrors.kecamatan ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         required
                         disabled={!addressForm.cityId && !addressForm.isManualCity}
                       >
@@ -707,6 +787,9 @@ export default function CheckoutPage() {
                         <option value="manual">Lainnya (Isi Manual)</option>
                       </select>
                     )}
+                    {formErrors.kecamatan && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.kecamatan}</p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="kodePos" className="block text-sm font-medium text-gray-700">
@@ -718,9 +801,14 @@ export default function CheckoutPage() {
                       name="kodePos"
                       value={addressForm.kodePos}
                       onChange={handleAddressChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-2"
+                      className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-2 ${
+                        formErrors.kodePos ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       required
                     />
+                    {formErrors.kodePos && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.kodePos}</p>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -734,9 +822,14 @@ export default function CheckoutPage() {
                     onChange={handleAddressChange}
                     rows={6}
                     placeholder="Contoh: Jl. Imam Bonjol No. 123, Kota Surabaya, Jawa Timur"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#472D2D] focus:ring-[#472D2D] text-base px-4 py-[7px] resize-none"
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:ring-[#472D2D] focus:border-[#472D2D] text-base px-4 py-[7px] resize-none ${
+                      formErrors.alamatLengkap ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     required
                   />
+                  {formErrors.alamatLengkap && (
+                    <p className="mt-1 text-sm text-red-600">{formErrors.alamatLengkap}</p>
+                  )}
                 </div>
               </div>
             </div>

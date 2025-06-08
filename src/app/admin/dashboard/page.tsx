@@ -138,10 +138,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-[#472D2D] mb-4">Aktivitas Terbaru</h2>
-        <p className="text-gray-600">Belum ada aktivitas</p>
-      </div>
     </div>
   );
 } 

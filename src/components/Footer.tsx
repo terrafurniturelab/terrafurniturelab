@@ -9,16 +9,19 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="space-y-4">
-              <div className="flex items-center">
-                <Image
-                  src="/logo-w.png"
-                  alt={content.navbar.brand}
-                  width={800}
-                  height={800}
-                  className="h-11 w-auto"
-                  priority
-                />
-              </div>
+              <Link href="/" className="flex-shrink-0 flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Image src="/logoTF.png" alt={content.navbar.brand} width={800} height={800} className="h-11 w-auto" priority />
+                  <Image
+                    src="/logo-w.png"
+                    alt={content.navbar.brand}
+                    width={800}
+                    height={800}
+                    className="h-11 w-auto"
+                    priority
+                  />
+                </div>
+              </Link>
               <p className="text-coklat-terang">
                 {content.footer.company.description}
               </p>

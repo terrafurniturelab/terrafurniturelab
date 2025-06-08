@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
 import CardAuth from '@/components/CardAuth';
 import LoadingScreen from '@/components/LoadingScreen';
 
@@ -35,9 +34,6 @@ export default function AdminLogin() {
       if (!response.ok) {
         throw new Error(data.error || 'Terjadi kesalahan saat login');
       }
-
-      // Set authentication cookie
-      Cookies.set('adminToken', data.token, { expires: 1 }); // Expires in 1 day
 
       // Redirect to admin dashboard
       router.push('/admin/dashboard');

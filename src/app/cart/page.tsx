@@ -54,35 +54,6 @@ export default function CartPage() {
     fetchCartItems();
   }, [setGlobalIsLoading]);
 
-  const handleQuantityChange = async (itemId: string, newQuantity: number) => {
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-      const response = await fetch(`${baseUrl}/api/cart/${itemId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ quantity: newQuantity }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update quantity');
-      }
-
-      const data = await response.json();
-      setCartItems(prevItems =>
-        prevItems.map(item =>
-          item.id === itemId ? { ...item, quantity: newQuantity } : item
-        )
-      );
-
-      // Dispatch cart count update event
-      window.dispatchEvent(new CustomEvent('updateCartCount', { detail: { count: data.totalQuantity } }));
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-    }
-  };
-
   const handleRemoveItem = async (itemId: string) => {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -190,19 +161,7 @@ export default function CartPage() {
                     </p>
                     <div className="flex items-center gap-4 mt-2">
                       <div className="flex items-center border rounded">
-                        <button
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
-                          onClick={() => handleQuantityChange(item.id, Math.max(1, item.quantity - 1))}
-                        >
-                          -
-                        </button>
-                        <span className="px-4 py-1">{item.quantity}</span>
-                        <button
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
-                          onClick={() => handleQuantityChange(item.id, Math.min(item.product.stock, item.quantity + 1))}
-                        >
-                          +
-                        </button>
+                        <span className="px-4 py-1">{item.quantity}x</span>
                       </div>
                       <button
                         onClick={() => handleRemoveItem(item.id)}

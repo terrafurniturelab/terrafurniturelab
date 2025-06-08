@@ -101,10 +101,6 @@ export default function OrdersPage() {
     router.push(`/chat/${orderId}`);
   };
 
-  const handleReview = (productId: string) => {
-    router.push(`/products/${productId}/review`);
-  };
-
   return (
     <main className="flex-1 mt-16">
       <div className="container mx-auto py-8 px-4">

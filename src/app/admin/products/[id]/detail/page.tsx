@@ -186,7 +186,7 @@ export default function AdminProductDetailPage() {
                       <div className="flex items-start gap-4">
                         <div className="relative w-12 h-12 flex-shrink-0">
                           <Image 
-                            src={review.user.image || '/placeholder.png'} 
+                            src={review.user.image || '/user.png'} 
                             alt={review.user.name} 
                             fill
                             className="rounded-full object-cover border-2 border-[#472D2D]/10"

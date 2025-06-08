@@ -104,6 +104,12 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (!product) return;
 
+        // Check if user is logged in using NextAuth session
+    if (!session) {
+      window.location.href = '/login';
+      return;
+    }
+
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
       const response = await fetch(`${baseUrl}/api/cart`, {
@@ -316,8 +322,9 @@ export default function ProductDetailPage() {
           {/* Actions */}
           <div className="flex gap-4 mb-4">
             <button
-              className={`${product.stock === 0 ? 'cursor-not-allowed disabled' : 'cursor-pointer'} flex-1 border border-[#472D2D] text-[#472D2D] hover:bg-[#472D2D] hover:text-white py-3 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2`}
-              onClick={handleAddToCart}
+              disabled={product.stock === 0}
+              className={`${product.stock === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer border-[#472D2D] text-[#472D2D] hover:bg-[#472D2D] hover:text-white'} flex-1 border  py-3 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2`}
+              onClick={product.stock === 0 ? undefined : handleAddToCart}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" className='text-[12px] md:text-[16px] px-0 mx-0' />
@@ -325,8 +332,9 @@ export default function ProductDetailPage() {
               <span className='text-[12px] md:text-[16px] px-0 mx-0'>{product.stock === 0 ? 'Habis' : 'Tambah ke Keranjang'}</span>
             </button>
             <button
-              className={`${product.stock === 0 ? 'cursor-not-allowed disabled' : 'cursor-pointer'} flex-1 bg-[#472D2D] hover:bg-[#382525] text-white py-3 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2`}
-              onClick={handleBuyNow}
+              disabled={product.stock === 0}
+              className={`${product.stock === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-[#382525] '} bg-[#472D2D] text-white flex-1  py-3 rounded-lg font-semibold text-lg transition flex items-center justify-center gap-2`}
+              onClick={product.stock === 0 ? undefined : handleBuyNow}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" className='text-[12px] md:text-[16px] px-0 mx-0'/>
@@ -438,7 +446,7 @@ export default function ProductDetailPage() {
                 <div key={review.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-[#472D2D] flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center">
                         <span className="text-white text-lg font-semibold">
                           <Image src={review.user?.image || '/user.png'} alt={review.user?.name || 'Anonymous'} width={48} height={48} className="rounded-full" />
                         </span>

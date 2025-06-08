@@ -4,13 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import Cookies from 'js-cookie';
+
 import {
   HomeIcon,
   TagIcon,
   CubeIcon,
   ShoppingCartIcon,
-  ChatBubbleLeftRightIcon,
   ArrowRightOnRectangleIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline';
@@ -21,7 +20,6 @@ const navigation = [
   { name: 'Kelola Kategori', href: '/admin/categories', icon: TagIcon },
   { name: 'Kelola Produk', href: '/admin/products', icon: CubeIcon },
   { name: 'Kelola Pemesanan', href: '/admin/orders', icon: ShoppingCartIcon },
-  { name: 'Pesan', href: '/admin/messages', icon: ChatBubbleLeftRightIcon },
 ];
 
 export default function AdminSidebar() {
@@ -30,6 +28,7 @@ export default function AdminSidebar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [admin, setAdmin] = useState<{ name: string; email: string } | null>(null);
+  const [processingCount, setProcessingCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -38,6 +37,15 @@ export default function AdminSidebar() {
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && data.name && data.email) setAdmin({ name: data.name, email: data.email });
+      });
+
+    // Fetch processing orders count
+    fetch('/api/admin/orders/count')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && typeof data.processingCount === 'number') {
+          setProcessingCount(data.processingCount);
+        }
       });
   }, []);
 
@@ -110,7 +118,14 @@ export default function AdminSidebar() {
                     : 'text-gray-300 hover:bg-[#382525] hover:text-white'
                 }`}
               >
-                <item.icon className="w-6 h-6" />
+                <div className="relative">
+                  <item.icon className="w-6 h-6" />
+                  {item.name === 'Kelola Pemesanan' && processingCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {processingCount}
+                    </span>
+                  )}
+                </div>
                 {isSidebarOpen && <span>{item.name}</span>}
               </Link>
             );

@@ -151,19 +151,19 @@ export default function CartCheckoutPage() {
 
     setLoadingLocations(prev => ({ ...prev, provinces: true }));
     try {
-      const res = await fetch('/api/rajaongkir?type=province', {
+      const res = await fetch('/api/emsifa?type=province', {
         cache: 'force-cache'
       });
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.details || 'Failed to fetch provinces');
+        throw new Error('Failed to fetch provinces');
       }
       const data = await res.json();
-      if (!data.rajaongkir?.results) {
-        throw new Error('Invalid response format from Raja Ongkir API');
+      if (Array.isArray(data)) {
+        setProvinces(data);
+        locationCache.provinces.set('all', data);
+      } else {
+        throw new Error('Invalid response format');
       }
-      setProvinces(data.rajaongkir.results);
-      locationCache.provinces.set('all', data.rajaongkir.results);
     } catch (error) {
       console.error('Error fetching provinces:', error);
       alert(`Error loading provinces: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -181,13 +181,17 @@ export default function CartCheckoutPage() {
 
     setLoadingLocations(prev => ({ ...prev, cities: true }));
     try {
-      const res = await fetch(`/api/rajaongkir?type=city&id=${provinceId}`, {
+      const res = await fetch(`/api/emsifa?type=city&id=${provinceId}`, {
         cache: 'force-cache'
       });
       if (!res.ok) throw new Error('Failed to fetch cities');
       const data = await res.json();
-      setCities(data.rajaongkir.results);
-      locationCache.cities.set(provinceId, data.rajaongkir.results);
+      if (Array.isArray(data)) {
+        setCities(data);
+        locationCache.cities.set(provinceId, data);
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
       console.error('Error fetching cities:', error);
     } finally {
@@ -204,13 +208,17 @@ export default function CartCheckoutPage() {
 
     setLoadingLocations(prev => ({ ...prev, districts: true }));
     try {
-      const res = await fetch(`/api/rajaongkir?type=district&id=${cityId}`, {
+      const res = await fetch(`/api/emsifa?type=district&id=${cityId}`, {
         cache: 'force-cache'
       });
       if (!res.ok) throw new Error('Failed to fetch districts');
       const data = await res.json();
-      setDistricts(data.rajaongkir.results);
-      locationCache.districts.set(cityId, data.rajaongkir.results);
+      if (Array.isArray(data)) {
+        setDistricts(data);
+        locationCache.districts.set(cityId, data);
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
       console.error('Error fetching districts:', error);
     } finally {

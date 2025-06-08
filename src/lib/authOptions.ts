@@ -145,7 +145,14 @@ export const authOptions: AuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user = { ...session.user, id: token.sub! };
+        // Ambil user terbaru dari database
+        const user = await prisma.user.findUnique({ where: { id: token.sub } });
+        session.user = {
+          ...session.user,
+          id: token.sub!,
+          name: user?.name ?? session.user.name,
+          image: user?.image ?? session.user.image,
+        };
       }
       session.accessToken = token.accessToken;
       return session;
