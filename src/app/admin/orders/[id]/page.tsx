@@ -4,10 +4,48 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+}
+
+interface OrderItem {
+  id: string;
+  product: Product;
+  quantity: number;
+}
+
+interface Address {
+  fullName: string;
+  phoneNumber: string;
+  province: string;
+  city: string;
+  kecamatan: string;
+  kodePos: string;
+  alamatLengkap: string;
+}
+
+interface User {
+  email: string;
+}
+
+interface Order {
+  id: string;
+  state: string;
+  paymentProof: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: OrderItem[];
+  address: Address;
+  user: User;
+}
+
 export default function AdminOrderDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +84,7 @@ export default function AdminOrderDetailPage() {
       {/* Order Items */}
       <div className="space-y-4 mb-6">
         <h2 className="font-semibold text-lg text-[#472D2D]">Item Pesanan</h2>
-        {order.items.map((item: any) => (
+        {order.items.map((item: OrderItem) => (
           <div key={item.id} className="flex gap-4 items-center p-4 bg-gray-50 rounded-lg">
             <div className="w-20 h-20 relative">
               <Image
@@ -73,7 +111,7 @@ export default function AdminOrderDetailPage() {
             style: 'currency',
             currency: 'IDR',
             minimumFractionDigits: 0,
-          }).format(order.items.reduce((total: number, item: { product: { price: number }, quantity: number }) => total + (item.product.price * item.quantity), 0))}
+          }).format(order.items.reduce((total: number, item: OrderItem) => total + (item.product.price * item.quantity), 0))}
         </span>
       </div>
       <div className="mb-2">

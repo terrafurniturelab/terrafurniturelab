@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Checkout, CheckoutItem, Product } from "@prisma/client";
 import { Package } from "lucide-react";
 import { toast } from "sonner";
@@ -22,35 +22,10 @@ export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [unreviewedOrders, setUnreviewedOrders] = useState<OrderWithDetails[]>([]);
 
   const currentStatus = searchParams.get("status") || "semua";
 
-  useEffect(() => {
-    fetchOrders();
-    if (currentStatus === "selesai") {
-      fetchUnreviewedOrders();
-    }
-
-    const handleOrderItemsUpdate = (event: CustomEvent) => {
-      const { orderId, items } = event.detail;
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order.id === orderId 
-            ? { ...order, items } 
-            : order
-        )
-      );
-    };
-
-    window.addEventListener('updateOrderItems', handleOrderItemsUpdate as EventListener);
-
-    return () => {
-      window.removeEventListener('updateOrderItems', handleOrderItemsUpdate as EventListener);
-    };
-  }, [currentStatus]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/orders?status=${currentStatus}`);
@@ -76,14 +51,49 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentStatus]);
+
+  useEffect(() => {
+    fetchOrders();
+    if (currentStatus === "selesai") {
+      fetchUnreviewedOrders();
+    }
+
+    const handleOrderItemsUpdate = (event: CustomEvent) => {
+      const { orderId, items } = event.detail;
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, items } 
+            : order
+        )
+      );
+    };
+
+    window.addEventListener('updateOrderItems', handleOrderItemsUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('updateOrderItems', handleOrderItemsUpdate as EventListener);
+    };
+  }, [currentStatus, fetchOrders]);
 
   const fetchUnreviewedOrders = async () => {
     try {
       const response = await fetch('/api/reviews/unreviewed-count');
       if (!response.ok) throw new Error("Failed to fetch unreviewed orders");
       const data = await response.json();
-      setUnreviewedOrders(data.orders);
+      // Update orders with unreviewed status
+      setOrders(prevOrders => 
+        prevOrders.map(order => ({
+          ...order,
+          items: order.items.map(item => ({
+            ...item,
+            hasReview: !data.orders.some((unreviewed: OrderWithDetails) => 
+              unreviewed.items.some(unreviewedItem => unreviewedItem.id === item.id)
+            )
+          }))
+        }))
+      );
     } catch (error) {
       console.error("Error fetching unreviewed orders:", error);
     }

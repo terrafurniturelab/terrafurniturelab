@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from "react";
-import { signIn } from "next-auth/react";
 import CardAuth from "@/components/CardAuth";
 import GoogleRegisterButton from "@/components/GoogleRegisterButton";
 import Link from "next/link";

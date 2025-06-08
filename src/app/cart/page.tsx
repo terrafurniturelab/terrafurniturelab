@@ -28,6 +28,12 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { setIsLoading: setGlobalIsLoading } = useLoading();
 
+  // Check if any items are out of stock
+  const hasOutOfStockItems = cartItems.some(item => item.quantity > item.product.stock);
+
+  // Get out of stock items
+  const outOfStockItems = cartItems.filter(item => item.quantity > item.product.stock);
+
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
@@ -171,6 +177,16 @@ export default function CartPage() {
                         <TrashIcon className="h-5 w-5" />
                       </button>
                     </div>
+                    {item.quantity > item.product.stock && (
+                      <p className="text-red-500 text-sm mt-2">
+                        Stok tersedia: {item.product.stock} item
+                      </p>
+                    )}
+                    {item.quantity <= item.product.stock && (
+                      <p className="text-green-500 text-sm mt-2">
+                        Stok tersedia: {item.product.stock} item
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -185,10 +201,20 @@ export default function CartPage() {
                     <span>Subtotal</span>
                     <span>{formattedSubtotal}</span>
                   </div>
+                  {hasOutOfStockItems && (
+                    <div className="text-red-500 text-sm">
+                      Beberapa item melebihi stok yang tersedia. Silakan sesuaikan jumlah pesanan.
+                    </div>
+                  )}
                   <div className="border-t pt-4">
                     <button
                       onClick={handleCheckout}
-                      className="cursor-pointer w-full bg-[#472D2D] text-white py-3 rounded-lg font-semibold hover:bg-[#382525] transition-colors"
+                      disabled={hasOutOfStockItems}
+                      className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                        hasOutOfStockItems
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-[#472D2D] text-white hover:bg-[#382525] cursor-pointer'
+                      }`}
                     >
                       Lanjut ke Pembayaran
                     </button>

@@ -12,8 +12,6 @@ export default function AdminForgotPassword() {
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showResetForm, setShowResetForm] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -24,8 +22,7 @@ export default function AdminForgotPassword() {
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
-    setSuccess('');
+
 
     try {
       const response = await fetch('/api/admin/forgot-password', {
@@ -65,8 +62,7 @@ export default function AdminForgotPassword() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
-    setSuccess('');
+
 
     if (newPassword !== confirmPassword) {
       setModalTitle('Gagal');

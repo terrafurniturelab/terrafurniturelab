@@ -7,8 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const pathname = new URL(request.url).pathname;
-    const id = pathname.split('/').pop();
+    const { id } = params;
 
     if (!id) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
@@ -43,8 +42,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const pathname = new URL(request.url).pathname;
-    const id = pathname.split('/').pop();
+    const { id } = params;
 
     if (!id) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });

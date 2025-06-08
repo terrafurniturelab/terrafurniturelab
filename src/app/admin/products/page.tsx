@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useLoading } from '@/context/LoadingContext';
 import Image from 'next/image';
@@ -45,7 +45,7 @@ export default function ProductsPage() {
   const dropRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -62,9 +62,9 @@ export default function ProductsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setIsLoading]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       setError(null);
       const response = await fetch('/api/admin/categories');
@@ -78,12 +78,12 @@ export default function ProductsPage() {
       console.error('Error fetching categories:', error);
       setError(error instanceof Error ? error.message : 'Failed to fetch categories');
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, []);
+  }, [fetchProducts, fetchCategories]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

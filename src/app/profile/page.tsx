@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Truck, CheckCircle, Clock, ShoppingBag, User, Settings, LogOut, XCircle } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, ShoppingBag, Settings, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Order {

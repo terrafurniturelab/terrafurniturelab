@@ -1,12 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useLoading } from '@/context/LoadingContext';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
 
 interface Product {
   id: string;
@@ -56,7 +54,6 @@ interface PaymentMethod {
 
 export default function CartCheckoutPage() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
@@ -80,7 +77,6 @@ export default function CartCheckoutPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
-  const { setIsLoading } = useLoading();
   const [provinces, setProvinces] = useState<Location[]>([]);
   const [cities, setCities] = useState<Location[]>([]);
   const [districts, setDistricts] = useState<Location[]>([]);
@@ -137,11 +133,7 @@ export default function CartCheckoutPage() {
     fetchCartItems();
   }, [router]);
 
-  useEffect(() => {
-    fetchProvinces();
-  }, []);
-
-  const fetchProvinces = async () => {
+  const fetchProvinces = useCallback(async () => {
     // Check cache first
     const cachedProvinces = locationCache.provinces.get('all');
     if (cachedProvinces) {
@@ -170,7 +162,11 @@ export default function CartCheckoutPage() {
     } finally {
       setLoadingLocations(prev => ({ ...prev, provinces: false }));
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProvinces();
+  }, [fetchProvinces]);
 
   const fetchCities = async (provinceId: string) => {
     const cachedCities = locationCache.cities.get(provinceId);
@@ -508,7 +504,7 @@ export default function CartCheckoutPage() {
               </p>
               <p className="flex items-start gap-2">
                 <span className="font-semibold text-[#472D2D]">4.</span>
-                Klik tombol "Bayar Sekarang" dan upload bukti pembayaran
+                Klik tombol &quot;Bayar Sekarang&quot; dan upload bukti pembayaran
               </p>
               <p className="flex items-start gap-2">
                 <span className="font-semibold text-[#472D2D]">5.</span>
@@ -927,10 +923,10 @@ export default function CartCheckoutPage() {
               </div>
             </div>
             <h3 className="text-lg font-semibold text-[#472D2D] mb-2">
-              Pembayaran Berhasil!
+              Pembayaran Berhasil
             </h3>
             <p className="text-gray-600 mb-6">
-              Terima kasih telah melakukan pembayaran. Pesanan Anda akan segera diproses.
+              Terima kasih telah melakukan pembayaran. Pesanan Anda akan diproses setelah pembayaran dikonfirmasi. Silakan transfer sesuai nominal yang tertera.
             </p>
             <button
               onClick={handleSuccessModalClose}
@@ -939,6 +935,22 @@ export default function CartCheckoutPage() {
               OK
             </button>
           </div>
+        </div>
+      )}
+
+      {loadingLocations.provinces && (
+        <div className="text-center py-4">
+          <span>Loading provinces...</span>
+        </div>
+      )}
+      {loadingLocations.cities && (
+        <div className="text-center py-4">
+          <span>Loading cities...</span>
+        </div>
+      )}
+      {loadingLocations.districts && (
+        <div className="text-center py-4">
+          <span>Loading districts...</span>
         </div>
       )}
     </main>

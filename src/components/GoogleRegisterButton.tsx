@@ -3,7 +3,6 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import ModalCenter from "./ModalCenter";
-import { useRouter } from "next/navigation";
 
 interface GoogleRegisterButtonProps {
   children: React.ReactNode;
@@ -17,7 +16,6 @@ interface SignInResponse {
 }
 
 export default function GoogleRegisterButton({ children }: GoogleRegisterButtonProps) {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalStatus, setModalStatus] = useState<'error' | 'success' | 'info'>("info");
@@ -45,6 +43,7 @@ export default function GoogleRegisterButton({ children }: GoogleRegisterButtonP
       setModalDesc("Terjadi kesalahan saat registrasi dengan Google");
       setModalStatus('error');
       setModalOpen(true);
+      console.log(error);
     } finally {
       setIsLoading(false);
     }

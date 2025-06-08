@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLoading } from '@/context/LoadingContext';
@@ -64,10 +64,14 @@ interface PaymentMethod {
   logo: string;
 }
 
+interface LocationCache {
+  provinces: Map<string, Location[]>;
+  cities: Map<string, Location[]>;
+  districts: Map<string, Location[]>;
+}
+
 export default function CheckoutPage() {
-  const params = useParams();
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
@@ -91,19 +95,13 @@ export default function CheckoutPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
-  const { setIsLoading } = useLoading();
   const [provinces, setProvinces] = useState<Location[]>([]);
   const [cities, setCities] = useState<Location[]>([]);
   const [districts, setDistricts] = useState<Location[]>([]);
-  const [loadingLocations, setLoadingLocations] = useState({
-    provinces: false,
-    cities: false,
-    districts: false,
-  });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   // Cache for location data
-  const locationCache = {
+  const locationCache: LocationCache = {
     provinces: new Map<string, Location[]>(),
     cities: new Map<string, Location[]>(),
     districts: new Map<string, Location[]>(),
@@ -160,7 +158,9 @@ export default function CheckoutPage() {
         
         if (!res.ok) throw new Error('Failed to fetch products');
         const fetchedProducts = await res.json();
-        setProducts(Array.isArray(fetchedProducts) ? fetchedProducts : [fetchedProducts]);
+        if (!Array.isArray(fetchedProducts)) {
+          throw new Error('Invalid response format');
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
         router.push('/products');
@@ -178,7 +178,6 @@ export default function CheckoutPage() {
 
   const fetchProvinces = async () => {
     try {
-      setLoadingLocations(prev => ({ ...prev, provinces: true }));
       const response = await fetch('/api/emsifa?type=province');
       if (!response.ok) {
         throw new Error('Failed to fetch provinces');
@@ -191,14 +190,11 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error('Error fetching provinces:', error);
-    } finally {
-      setLoadingLocations(prev => ({ ...prev, provinces: false }));
     }
   };
 
   const fetchCities = async (provinceId: string) => {
     try {
-      setLoadingLocations(prev => ({ ...prev, cities: true }));
       const response = await fetch(`/api/emsifa?type=city&id=${provinceId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch cities');
@@ -211,14 +207,11 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error('Error fetching cities:', error);
-    } finally {
-      setLoadingLocations(prev => ({ ...prev, cities: false }));
     }
   };
 
   const fetchDistricts = async (cityId: string) => {
     try {
-      setLoadingLocations(prev => ({ ...prev, districts: true }));
       const response = await fetch(`/api/emsifa?type=district&id=${cityId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch districts');
@@ -231,8 +224,6 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error('Error fetching districts:', error);
-    } finally {
-      setLoadingLocations(prev => ({ ...prev, districts: false }));
     }
   };
 
@@ -575,7 +566,7 @@ export default function CheckoutPage() {
               </p>
               <p className="flex items-start gap-2">
                 <span className="font-semibold text-[#472D2D]">4.</span>
-                Klik tombol "Bayar Sekarang" dan upload bukti pembayaran
+                Klik tombol &quot;Bayar Sekarang&quot; dan upload bukti pembayaran
               </p>
               <p className="flex items-start gap-2">
                 <span className="font-semibold text-[#472D2D]">5.</span>

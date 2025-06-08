@@ -6,7 +6,6 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const isAdminPage = request.nextUrl.pathname.startsWith('/admin');
   const isAdminLoginPage = request.nextUrl.pathname === '/admin/login';
-  const isAdminDashboardPage = request.nextUrl.pathname === '/admin/dashboard';
   const isAdminRootPage = request.nextUrl.pathname === '/admin';
 
   // Check for admin token in cookies

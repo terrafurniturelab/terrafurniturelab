@@ -7,6 +7,12 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
+interface UserUpdateData {
+  name?: string;
+  password?: string;
+  image?: string;
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,7 +26,7 @@ export async function POST(request: Request) {
     const newPassword = formData.get('newPassword') as string;
     const profileImage = formData.get('profileImage') as File;
 
-    const updateData: any = { name };
+    const updateData: UserUpdateData = { name };
 
     // Handle password update if provided
     if (currentPassword && newPassword) {

@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 
 const KEMENDAGRI_BASE_URL = 'https://www.emsifa.com/api-wilayah-indonesia/api';
 
+interface RegionData {
+  id: string;
+  name: string;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type');
@@ -38,7 +43,7 @@ export async function GET(request: Request) {
     const data = await response.json();
     
     // Transform the data to match the expected format
-    const transformedData = data.map((item: any) => ({
+    const transformedData = data.map((item: RegionData) => ({
       id: item.id,
       name: item.name
     }));

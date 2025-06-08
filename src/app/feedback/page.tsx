@@ -43,7 +43,8 @@ export default function FeedbackPage() {
       setComment('');
       setRating(5);
     } catch (error) {
-      toast.error('Gagal mengirim feedback. Silakan coba lagi.');
+      const errorMessage = error instanceof Error ? error.message : 'Gagal mengirim feedback. Silakan coba lagi.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
