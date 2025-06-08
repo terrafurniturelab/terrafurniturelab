@@ -62,30 +62,16 @@ export default function AdminSidebar() {
   }
 
   return (
-    <div className={`bg-[#472D2D] text-white h-screen ${isSidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 fixed left-0 top-0`}>
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex flex-col items-center space-y-2">
-            <Image 
-              src="/logo-w.png" 
-              alt="Furniture Lab" 
-              width={150} 
-              height={40} 
-              priority
-              className="object-contain"
-            />
-            <h1 className={`font-bold text-xl ${!isSidebarOpen && 'hidden'}`}>
-              Admin Panel
-            </h1>
-          </div>
+    <>
+      <div className={`${isSidebarOpen ? 'left-64' : 'left-20'} absolute top-1/2 -translate-y-1/2 transition-all duration-300`} >
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 rounded-lg hover:bg-[#382525]"
+            className="py-4 pr-2 rounded-r-lg bg-[#472D2D] group"
           >
             <svg
-              className="w-6 h-6"
+              className="w-6 h-6 group-hover:stroke-gray-300 transition-colors"
               fill="none"
-              stroke="currentColor"
+              stroke="white"
               viewBox="0 0 24 24"
             >
               {isSidebarOpen ? (
@@ -105,56 +91,76 @@ export default function AdminSidebar() {
               )}
             </svg>
           </button>
-        </div>
-
-        <nav className="space-y-2">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-[#382525] text-white'
-                    : 'text-gray-300 hover:bg-[#382525] hover:text-white'
-                }`}
-              >
-                <div className="relative">
-                  <item.icon className="w-6 h-6" />
-                  {item.name === 'Kelola Pemesanan' && processingCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {processingCount}
-                    </span>
-                  )}
-                </div>
-                {isSidebarOpen && <span>{item.name}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="absolute bottom-4 left-0 right-0 px-4">
-          {admin && (
-            <div className="flex items-center mb-2 space-x-2 p-2 bg-[#382525] rounded-lg">
-              <UserCircleIcon className="w-8 h-8 text-gray-300" />
-              {isSidebarOpen && (
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-white">{admin.name}</span>
-                  <span className="text-xs text-gray-400">{admin.email}</span>
-                </div>
-              )}
+      </div>
+      <div className={`bg-[#472D2D] text-white h-screen ${isSidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 fixed left-0 top-0`}>
+        <div className="p-4">
+          <div className="flex items-center justify-center mb-8">
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <Image src="/logoTF.png" alt="Furniture Lab" width={60} height={60} priority className="object-contain" />
+              <Image 
+                src="/logo-w.png" 
+                alt="Furniture Lab" 
+                width={150} 
+                height={40} 
+                priority
+                className={`${!isSidebarOpen && 'hidden'} object-contain`}
+              />
+              <h1 className={`font-bold text-xl ${!isSidebarOpen && 'hidden'}`}>
+                Admin Panel
+              </h1>
             </div>
-          )}
-          <button
-            onClick={handleLogout}
-            className="cursor-pointer flex items-center space-x-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-[#382525] hover:text-white transition-colors"
-          >
-            <ArrowRightOnRectangleIcon className="w-6 h-6" />
-            {isSidebarOpen && <span>Keluar</span>}
-          </button>
+
+          </div>
+
+          <nav className="space-y-2">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center space-x-3 px-4 py-3 ${!isSidebarOpen && 'justify-center'} rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-[#382525] text-white'
+                      : 'text-gray-300 hover:bg-[#382525] hover:text-white'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className="w-6 h-6" />
+                    {item.name === 'Kelola Pemesanan' && processingCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {processingCount}
+                      </span>
+                    )}
+                  </div>
+                  {isSidebarOpen && <span>{item.name}</span>}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="absolute bottom-4 left-0 right-0 px-4">
+            {admin && (
+              <div className="flex items-center mb-2 space-x-2 p-2 bg-[#382525] rounded-lg">
+                <UserCircleIcon className="w-8 h-8 text-gray-300" />
+                {isSidebarOpen && (
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-white">{admin.name}</span>
+                    <span className="text-xs text-gray-400">{admin.email}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            <button
+              onClick={handleLogout}
+              className="cursor-pointer flex items-center space-x-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-[#382525] hover:text-white transition-colors"
+            >
+              <ArrowRightOnRectangleIcon className="w-6 h-6" />
+              {isSidebarOpen && <span>Keluar</span>}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 } 
