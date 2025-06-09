@@ -2,10 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
+
 // PUT /api/admin/categories/[id]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const cookieStore = await cookies();
@@ -23,7 +29,7 @@ export async function PUT(
 
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id: context.params.id },
     });
 
     if (!existingCategory) {
@@ -34,7 +40,7 @@ export async function PUT(
     const duplicateCategory = await prisma.category.findFirst({
       where: {
         name,
-        id: { not: params.id },
+        id: { not: context.params.id },
       },
     });
 
@@ -46,7 +52,7 @@ export async function PUT(
     }
 
     const category = await prisma.category.update({
-      where: { id: params.id },
+      where: { id: context.params.id },
       data: { name },
     });
 
@@ -60,7 +66,7 @@ export async function PUT(
 // DELETE /api/admin/categories/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const cookieStore = await cookies();
@@ -72,7 +78,7 @@ export async function DELETE(
 
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id: context.params.id },
       include: {
         products: true,
       },
@@ -91,7 +97,7 @@ export async function DELETE(
     }
 
     await prisma.category.delete({
-      where: { id: params.id },
+      where: { id: context.params.id },
     });
 
     return NextResponse.json({ message: 'Category deleted successfully' });
