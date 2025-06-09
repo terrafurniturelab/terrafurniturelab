@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 
 interface Product {
   id: string;
@@ -142,25 +143,43 @@ export default function CartCheckoutPage() {
     }
 
     setLoadingLocations(prev => ({ ...prev, provinces: true }));
-    try {
-      const res = await fetch('/api/emsifa?type=province', {
-        cache: 'force-cache'
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch provinces');
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        const res = await fetch('/api/emsifa?type=province', {
+          cache: 'force-cache',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch provinces: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        
+        if (Array.isArray(data)) {
+          setProvinces(data);
+          locationCache.provinces.set('all', data);
+          return;
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        console.error(`Error fetching provinces (attempt ${retryCount + 1}):`, error);
+        retryCount++;
+        
+        if (retryCount === maxRetries) {
+          toast.error('Gagal memuat data provinsi. Silakan coba lagi nanti.');
+          break;
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
       }
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setProvinces(data);
-        locationCache.provinces.set('all', data);
-      } else {
-        throw new Error('Invalid response format');
-      }
-    } catch (error) {
-      console.error('Error fetching provinces:', error);
-      alert(`Error loading provinces: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoadingLocations(prev => ({ ...prev, provinces: false }));
     }
   }, [locationCache.provinces]);
 
