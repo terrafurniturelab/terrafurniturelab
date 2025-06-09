@@ -148,7 +148,14 @@ export default function AdminOrderDetailPage() {
         <span className="font-semibold">Bukti Pembayaran:</span>
         {order.paymentProof ? (
           <a href={order.paymentProof} target="_blank" rel="noopener noreferrer" className="block mt-1">
-            <Image src={order.paymentProof} alt="Bukti" width={120} height={120} className="rounded border" />
+            <Image 
+              src={order.paymentProof} 
+              alt="Bukti" 
+              width={120} 
+              height={120} 
+              className="rounded border" 
+              unoptimized={order.paymentProof.startsWith('https://res.cloudinary.com')}
+            />
           </a>
         ) : (
           <span className="text-gray-400 ml-2">Belum ada</span>

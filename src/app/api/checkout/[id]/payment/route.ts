@@ -2,9 +2,26 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Define type for Cloudinary upload result
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+  format: string;
+  resource_type: string;
+  created_at: string;
+  bytes: number;
+  width: number;
+  height: number;
+}
 
 export async function POST(
   request: NextRequest,
@@ -66,38 +83,23 @@ export async function POST(
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'payments');
-    if (!existsSync(uploadsDir)) {
-      try {
-        await mkdir(uploadsDir, { recursive: true });
-        console.log('Created uploads directory:', uploadsDir);
-      } catch (error) {
-        console.error('Error creating uploads directory:', error);
-        return NextResponse.json(
-          { error: 'Failed to create uploads directory' },
-          { status: 500 }
-        );
-      }
-    }
-
-    // Generate unique filename
+    // Convert file to buffer
     const bytes = await paymentProof.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const filename = `${Date.now()}-${paymentProof.name}`;
-    const filepath = join(uploadsDir, filename);
 
-    try {
-      // Save file
-      await writeFile(filepath, buffer);
-      console.log('File saved successfully:', filepath);
-    } catch (error) {
-      console.error('Error saving file:', error);
-      return NextResponse.json(
-        { error: 'Failed to save payment proof file' },
-        { status: 500 }
-      );
-    }
+    // Upload to Cloudinary
+    const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: 'furniture-lab/payments',
+          resource_type: 'auto',
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result as CloudinaryUploadResult);
+        }
+      ).end(buffer);
+    });
 
     try {
       // Update checkout with payment proof
@@ -106,7 +108,7 @@ export async function POST(
           id,
         },
         data: {
-          paymentProof: `/uploads/payments/${filename}`,
+          paymentProof: result.secure_url,
           state: 'PROCESSING',
         },
       });
@@ -114,13 +116,6 @@ export async function POST(
       return NextResponse.json(checkout);
     } catch (error) {
       console.error('Error updating checkout:', error);
-      // Try to delete the uploaded file if database update fails
-      try {
-        await writeFile(filepath, ''); // Clear the file
-        console.log('Cleared uploaded file after database error');
-      } catch (deleteError) {
-        console.error('Error clearing uploaded file:', deleteError);
-      }
       return NextResponse.json(
         { error: 'Failed to update checkout with payment proof' },
         { status: 500 }

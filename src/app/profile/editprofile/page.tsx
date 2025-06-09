@@ -32,8 +32,7 @@ export default function EditProfilePage() {
         ...prev,
         name: session.user.name || '',
       }));
-      const imagePath = session.user.image;
-      setPreviewUrl(imagePath ? `${imagePath}` : '/user.png');
+      setPreviewUrl(session.user.image || '/user.png');
     }
   }, [session]);
 
@@ -114,7 +113,7 @@ export default function EditProfilePage() {
 
       // Update preview URL dengan gambar baru
       if (data.image) {
-        setPreviewUrl(`/${data.image}`);
+        setPreviewUrl(data.image);
       }
 
       toast.success('Profil berhasil diupdate');
@@ -162,7 +161,7 @@ export default function EditProfilePage() {
                     alt="Profile"
                     fill
                     className="object-cover"
-                    unoptimized
+                    unoptimized={previewUrl.startsWith('https://res.cloudinary.com')}
                     priority
                   />
                 </div>

@@ -3,9 +3,26 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Define type for Cloudinary upload result
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+  format: string;
+  resource_type: string;
+  created_at: string;
+  bytes: number;
+  width: number;
+  height: number;
+}
 
 interface UserUpdateData {
   name?: string;
@@ -72,27 +89,29 @@ export async function POST(request: Request) {
       }
 
       try {
+        // Convert file to buffer
         const bytes = await profileImage.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        
-        // Create unique filename
-        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-        const filename = `profile-${uniqueSuffix}.${profileImage.name.split('.').pop()}`;
-        
-        // Ensure uploads directory exists
-        const publicDir = join(process.cwd(), 'public', 'uploads');
-        if (!existsSync(publicDir)) {
-          await mkdir(publicDir, { recursive: true });
-        }
-        
-        // Save file
-        await writeFile(join(publicDir, filename), buffer);
-        
-        updateData.image = `/uploads/${filename}`;
+
+        // Upload to Cloudinary
+        const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
+          cloudinary.uploader.upload_stream(
+            {
+              folder: 'furniture-lab/profiles',
+              resource_type: 'auto',
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result as CloudinaryUploadResult);
+            }
+          ).end(buffer);
+        });
+
+        updateData.image = result.secure_url;
       } catch (error) {
-        console.error('Error saving image:', error);
+        console.error('Error uploading image:', error);
         return NextResponse.json(
-          { error: 'Gagal menyimpan gambar' },
+          { error: 'Gagal mengupload gambar' },
           { status: 500 }
         );
       }

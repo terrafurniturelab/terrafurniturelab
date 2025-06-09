@@ -268,7 +268,14 @@ export default function AdminOrdersPage() {
                   <td className="px-2 py-2 text-center">
                     {order.paymentProof ? (
                       <a href={order.paymentProof} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                        <Image src={order.paymentProof} alt="Bukti" width={48} height={48} className="rounded border mx-auto" />
+                        <Image 
+                          src={order.paymentProof} 
+                          alt="Bukti" 
+                          width={48} 
+                          height={48} 
+                          className="rounded border mx-auto" 
+                          unoptimized={order.paymentProof.startsWith('https://res.cloudinary.com')}
+                        />
                       </a>
                     ) : (
                       <span className="text-gray-400">Belum ada</span>
