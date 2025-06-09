@@ -89,7 +89,15 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json(user.cart.items);
+    // Transform the response to match the expected format
+    const transformedItems = user.cart.items.map(item => ({
+      id: item.id,
+      productId: item.productId,
+      quantity: item.quantity,
+      product: item.product
+    }));
+
+    return NextResponse.json(transformedItems);
   } catch (error) {
     console.error('Error fetching cart items:', error);
     return new NextResponse('Internal Server Error', { status: 500 });

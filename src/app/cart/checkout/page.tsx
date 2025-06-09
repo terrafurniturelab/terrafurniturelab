@@ -117,39 +117,16 @@ export default function CartCheckoutPage() {
     const fetchCartItems = async () => {
       try {
         setIsInitialLoading(true);
-        const response = await fetch('/api/cart');
+        const response = await fetch('/api/cart', {
+          cache: 'force-cache'
+        });
+        
         if (!response.ok) {
           throw new Error('Failed to fetch cart items');
         }
+        
         const data = await response.json();
-        
-        // Fetch products in parallel
-        const productIds = data.map((item: CartItem) => item.productId);
-        const uniqueProductIds = Array.from(new Set(productIds)); // Remove duplicates
-
-        const productsRes = await fetch(`/api/products?ids=${uniqueProductIds.join(',')}`, { 
-          cache: 'force-cache' // Enable caching for product data
-        });
-        
-        if (!productsRes.ok) throw new Error('Failed to fetch products');
-        const fetchedProducts = await productsRes.json();
-        if (!Array.isArray(fetchedProducts)) {
-          throw new Error('Invalid response format');
-        }
-
-        // Map products to cart items
-        const enrichedCartItems = data.map((item: CartItem) => {
-          const product = fetchedProducts.find((p: Product) => p.id === item.productId);
-          return {
-            ...item,
-            product: {
-              ...product,
-              images: product?.images || ['/placeholder.png']
-            }
-          };
-        });
-
-        setCartItems(enrichedCartItems);
+        setCartItems(data);
       } catch (error) {
         console.error('Error fetching cart items:', error);
         router.push('/cart');
@@ -983,22 +960,6 @@ export default function CartCheckoutPage() {
               OK
             </button>
           </div>
-        </div>
-      )}
-
-      {loadingLocations.provinces && (
-        <div className="text-center py-4">
-          <span>Loading provinces...</span>
-        </div>
-      )}
-      {loadingLocations.cities && (
-        <div className="text-center py-4">
-          <span>Loading cities...</span>
-        </div>
-      )}
-      {loadingLocations.districts && (
-        <div className="text-center py-4">
-          <span>Loading districts...</span>
         </div>
       )}
     </main>
