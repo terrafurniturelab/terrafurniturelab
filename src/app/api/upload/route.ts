@@ -8,6 +8,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Define type for Cloudinary upload result
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+  format: string;
+  resource_type: string;
+  created_at: string;
+  bytes: number;
+  width: number;
+  height: number;
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -40,7 +52,7 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     // Upload to Cloudinary
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {
           folder: 'furniture-lab',
@@ -48,12 +60,12 @@ export async function POST(request: Request) {
         },
         (error, result) => {
           if (error) reject(error);
-          else resolve(result);
+          else resolve(result as CloudinaryUploadResult);
         }
       ).end(buffer);
     });
 
-    return NextResponse.json({ url: (result as any).secure_url });
+    return NextResponse.json({ url: result.secure_url });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
