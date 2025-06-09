@@ -11,6 +11,9 @@ const mona = Mona_Sans({
 export const metadata: Metadata = {
   title: "Furniture Lab - Premium Furniture Store",
   description: "Transform your space with our premium furniture collection.",
+  icons: {
+    icon: "/logoTF.png",
+  },
 };
 
 export default function RootLayout({
