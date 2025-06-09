@@ -31,9 +31,6 @@ export default function CartPage() {
   // Check if any items are out of stock
   const hasOutOfStockItems = cartItems.some(item => item.quantity > item.product.stock);
 
-  // Get out of stock items
-  const outOfStockItems = cartItems.filter(item => item.quantity > item.product.stock);
-
   useEffect(() => {
     const fetchCartItems = async () => {
       try {

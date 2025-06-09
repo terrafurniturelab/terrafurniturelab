@@ -3,7 +3,6 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCart } from '../context/CartContext';
 import { StarIcon } from '@heroicons/react/24/solid';
 
 interface Product {
@@ -22,7 +21,7 @@ interface Product {
 }
 
 export default function ProductCard(product: Product) {
-  const { addToCart } = useCart();
+
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',

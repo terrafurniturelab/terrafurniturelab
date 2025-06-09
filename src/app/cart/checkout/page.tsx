@@ -162,7 +162,7 @@ export default function CartCheckoutPage() {
     } finally {
       setLoadingLocations(prev => ({ ...prev, provinces: false }));
     }
-  }, []);
+  }, [locationCache.provinces]);
 
   useEffect(() => {
     fetchProvinces();

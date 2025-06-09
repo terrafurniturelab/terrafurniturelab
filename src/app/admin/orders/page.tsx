@@ -4,7 +4,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { PencilIcon, XCircleIcon, ClockIcon, CheckCircleIcon, TruckIcon, InboxIcon} from "@heroicons/react/24/outline";
+import { XCircleIcon, ClockIcon, CheckCircleIcon, TruckIcon, InboxIcon} from "@heroicons/react/24/outline";
 
 interface CheckoutItem {
   id: string;
@@ -56,12 +56,6 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
   CANCELLED: <XCircleIcon className="h-5 w-5 text-red-500" />, // Cancelled
 };
 
-const renderStatusBadge = (state: string) => (
-  <span className="flex items-center gap-1">
-    {STATUS_ICON[state]}
-    <span className="text-sm font-medium">{state}</span>
-  </span>
-);
 
 type SortOrder = 'newest' | 'oldest';
 
@@ -75,10 +69,6 @@ export default function AdminOrdersPage() {
   const [processingCount, setProcessingCount] = useState(0);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const router = useRouter();
-
-  const handleEditClick = (order: Checkout) => {
-    router.push(`/admin/orders/${order.id}`);
-  };
 
   const fetchOrders = async () => {
     setLoading(true);

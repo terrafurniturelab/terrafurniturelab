@@ -4,16 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useLoading } from '@/context/LoadingContext';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
-
-interface Product {
-  id: string;
-  name: string;
-  images: string[];
-  price: number;
-  stock: number;
-}
 
 interface CheckoutItem {
   productId: string;
@@ -64,10 +55,10 @@ interface PaymentMethod {
   logo: string;
 }
 
-interface LocationCache {
-  provinces: Map<string, Location[]>;
-  cities: Map<string, Location[]>;
-  districts: Map<string, Location[]>;
+interface ApiErrorResponse {
+  error: string;
+  message?: string;
+  statusCode?: number;
 }
 
 export default function CheckoutPage() {
@@ -99,13 +90,6 @@ export default function CheckoutPage() {
   const [cities, setCities] = useState<Location[]>([]);
   const [districts, setDistricts] = useState<Location[]>([]);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-
-  // Cache for location data
-  const locationCache: LocationCache = {
-    provinces: new Map<string, Location[]>(),
-    cities: new Map<string, Location[]>(),
-    districts: new Map<string, Location[]>(),
-  };
 
   const paymentMethods: PaymentMethod[] = [
     {
@@ -473,7 +457,7 @@ export default function CheckoutPage() {
       });
 
       if (!createCheckoutRes.ok) {
-        const error = await createCheckoutRes.json();
+        const error = await createCheckoutRes.json() as ApiErrorResponse;
         console.error('Error creating checkout:', error);
         throw new Error(error.error || 'Gagal membuat checkout');
       }
@@ -500,7 +484,7 @@ export default function CheckoutPage() {
       });
 
       if (!res.ok) {
-        const error = await res.json();
+        const error = await res.json() as ApiErrorResponse;
         console.error('Error uploading payment proof:', error);
         throw new Error(error.error || 'Gagal mengupload bukti pembayaran');
       }
