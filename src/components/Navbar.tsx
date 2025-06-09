@@ -221,13 +221,15 @@ export default function Navbar() {
                     }`}
                   >
                     <div className="relative">
-                      <Image
-                        src={session.user?.image || "/user.png"}
-                        alt="Profile"
-                        width={40}
-                        height={40}
-                        className="rounded-full mr-2"
-                      />
+                      <div className="relative w-10 h-10 rounded-full overflow-hidden ring-4 ring-[#472D2D]/10 mr-2">
+                        <Image
+                          src={session.user?.image || "/user.png"}
+                          alt="Profile"
+                          width={40}
+                          height={40}
+                          className="object-cover"
+                        />
+                      </div>
                       {unreviewedCount > 0 && (
                         <span className="absolute -top-1 -right-1 bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                           {unreviewedCount}
