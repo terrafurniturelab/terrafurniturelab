@@ -81,11 +81,6 @@ export default function CartCheckoutPage() {
   const [provinces, setProvinces] = useState<Location[]>([]);
   const [cities, setCities] = useState<Location[]>([]);
   const [districts, setDistricts] = useState<Location[]>([]);
-  const [loadingLocations, setLoadingLocations] = useState({
-    provinces: false,
-    cities: false,
-    districts: false,
-  });
 
   // Cache for location data
   const locationCache = {
@@ -146,7 +141,6 @@ export default function CartCheckoutPage() {
       return;
     }
 
-    setLoadingLocations(prev => ({ ...prev, provinces: true }));
     let retryCount = 0;
     const maxRetries = 3;
 
@@ -198,7 +192,6 @@ export default function CartCheckoutPage() {
       return;
     }
 
-    setLoadingLocations(prev => ({ ...prev, cities: true }));
     try {
       const res = await fetch(`/api/emsifa?type=city&id=${provinceId}`, {
         cache: 'force-cache'
@@ -213,8 +206,6 @@ export default function CartCheckoutPage() {
       }
     } catch (error) {
       console.error('Error fetching cities:', error);
-    } finally {
-      setLoadingLocations(prev => ({ ...prev, cities: false }));
     }
   };
 
@@ -225,7 +216,6 @@ export default function CartCheckoutPage() {
       return;
     }
 
-    setLoadingLocations(prev => ({ ...prev, districts: true }));
     try {
       const res = await fetch(`/api/emsifa?type=district&id=${cityId}`, {
         cache: 'force-cache'
@@ -240,8 +230,6 @@ export default function CartCheckoutPage() {
       }
     } catch (error) {
       console.error('Error fetching districts:', error);
-    } finally {
-      setLoadingLocations(prev => ({ ...prev, districts: false }));
     }
   };
 
