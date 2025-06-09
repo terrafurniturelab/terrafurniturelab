@@ -225,8 +225,7 @@ export default function Navbar() {
                         <Image
                           src={session.user?.image || "/user.png"}
                           alt="Profile"
-                          width={100}
-                          height={100}
+                          fill
                           className="object-cover"
                         />
                       </div>
