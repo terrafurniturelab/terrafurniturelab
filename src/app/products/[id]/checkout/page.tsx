@@ -14,6 +14,11 @@ interface CheckoutItem {
   image: string;
 }
 
+interface CheckoutPayloadItem {
+  productId: string;
+  quantity: number;
+}
+
 interface AddressForm {
   id?: string;
   fullName: string;
@@ -438,7 +443,7 @@ export default function CheckoutPage() {
 
       // Create checkout
       const checkoutPayload = {
-        items: checkoutData.items.map((item: any) => ({
+        items: checkoutData.items.map((item: CheckoutItem): CheckoutPayloadItem => ({
           productId: item.productId,
           quantity: item.quantity,
         })),
