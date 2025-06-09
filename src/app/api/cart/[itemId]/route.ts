@@ -1,16 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function PATCH(
-  request: Request,
-  context: { params: { itemId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const params = await context.params;
-    const itemId = params.itemId;
+    const { itemId } = await params;
 
     if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
@@ -100,13 +99,12 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
-  context: { params: { itemId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const params = await context.params;
-    const itemId = params.itemId;
+    const { itemId } = await params;
 
     if (!session?.user?.email) {
       return new NextResponse('Unauthorized', { status: 401 });
