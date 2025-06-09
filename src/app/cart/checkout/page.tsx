@@ -122,7 +122,34 @@ export default function CartCheckoutPage() {
           throw new Error('Failed to fetch cart items');
         }
         const data = await response.json();
-        setCartItems(data || []);
+        
+        // Fetch products in parallel
+        const productIds = data.map((item: CartItem) => item.productId);
+        const uniqueProductIds = Array.from(new Set(productIds)); // Remove duplicates
+
+        const productsRes = await fetch(`/api/products?ids=${uniqueProductIds.join(',')}`, { 
+          cache: 'force-cache' // Enable caching for product data
+        });
+        
+        if (!productsRes.ok) throw new Error('Failed to fetch products');
+        const fetchedProducts = await productsRes.json();
+        if (!Array.isArray(fetchedProducts)) {
+          throw new Error('Invalid response format');
+        }
+
+        // Map products to cart items
+        const enrichedCartItems = data.map((item: CartItem) => {
+          const product = fetchedProducts.find((p: Product) => p.id === item.productId);
+          return {
+            ...item,
+            product: {
+              ...product,
+              images: product?.images || ['/placeholder.png']
+            }
+          };
+        });
+
+        setCartItems(enrichedCartItems);
       } catch (error) {
         console.error('Error fetching cart items:', error);
         router.push('/cart');
@@ -746,6 +773,7 @@ export default function CartCheckoutPage() {
                           width={80}
                           height={80}
                           className="object-cover rounded-md"
+                          unoptimized={item.product.images[0]?.startsWith('https://res.cloudinary.com')}
                         />
                       </div>
                       <div className="flex-1">
@@ -866,6 +894,7 @@ export default function CartCheckoutPage() {
                           fill
                           className="object-contain"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          unoptimized
                         />
                         <button
                           onClick={() => {
