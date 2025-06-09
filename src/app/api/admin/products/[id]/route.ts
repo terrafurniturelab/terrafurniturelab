@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -17,6 +17,8 @@ export async function PUT(
       );
     }
 
+    // Await params since it's now a Promise
+    const { id } = await params;
     const body = await request.json();
     const { name, images, description, stock, price, categoryId } = body;
 
@@ -29,7 +31,7 @@ export async function PUT(
 
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingProduct) {
@@ -52,7 +54,7 @@ export async function PUT(
     }
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         images,
@@ -77,8 +79,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -91,12 +93,15 @@ export async function DELETE(
       );
     }
 
+    // Await params since it's now a Promise
+    const { id } = await params;
+
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
-        cart: true,
-        checkouts: true,
+        cartItems: true,
+        checkoutItems: true,
       },
     });
 
@@ -108,7 +113,7 @@ export async function DELETE(
     }
 
     // Check if product is in use
-    if (existingProduct.cart.length > 0 || existingProduct.checkouts.length > 0) {
+    if (existingProduct.cartItems.length > 0 || existingProduct.checkoutItems.length > 0) {
       return NextResponse.json(
         { error: 'Cannot delete product that is in use' },
         { status: 400 }
@@ -116,7 +121,7 @@ export async function DELETE(
     }
 
     await prisma.product.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Product deleted successfully' });
