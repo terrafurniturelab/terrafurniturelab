@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 // PUT /api/admin/categories/[id]
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -15,6 +15,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Await params since it's now a Promise
+    const { id } = await params;
     const { name } = await request.json();
 
     if (!name) {
@@ -23,7 +25,7 @@ export async function PUT(
 
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingCategory) {
@@ -34,7 +36,7 @@ export async function PUT(
     const duplicateCategory = await prisma.category.findFirst({
       where: {
         name,
-        id: { not: params.id },
+        id: { not: id },
       },
     });
 
@@ -46,7 +48,7 @@ export async function PUT(
     }
 
     const category = await prisma.category.update({
-      where: { id: params.id },
+      where: { id },
       data: { name },
     });
 
@@ -60,7 +62,7 @@ export async function PUT(
 // DELETE /api/admin/categories/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -70,9 +72,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Await params since it's now a Promise
+    const { id } = await params;
+
     // Check if category exists
     const existingCategory = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         products: true,
       },
@@ -91,7 +96,7 @@ export async function DELETE(
     }
 
     await prisma.category.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Category deleted successfully' });
@@ -99,4 +104,4 @@ export async function DELETE(
     console.error('Error deleting category:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-} 
+}
