@@ -231,6 +231,7 @@ export default function ProductDetailPage() {
               className="object-contain rounded-lg bg-gray-100"
               priority
               loading="eager"
+              unoptimized={product.images[selectedImageIdx]?.startsWith('https://res.cloudinary.com')}
             />
             {/* Navigation Buttons */}
             <button

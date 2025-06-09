@@ -21,7 +21,6 @@ interface Product {
 }
 
 export default function ProductCard(product: Product) {
-
   const formattedPrice = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -29,17 +28,21 @@ export default function ProductCard(product: Product) {
     maximumFractionDigits: 0,
   }).format(product.price);
 
+  // Ensure we have a valid image URL
+  const imageUrl = product.images[0] || '/placeholder.png';
+
   return (
     <div className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
       <div className="relative aspect-square w-full overflow-hidden">
         <Link href={`/products/${product.id}`}>
           <Image
-            src={product.images[0] || '/placeholder.png'}
+            src={imageUrl}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             priority={false}
+            unoptimized={imageUrl.startsWith('https://res.cloudinary.com')}
           />
         </Link>
       </div>

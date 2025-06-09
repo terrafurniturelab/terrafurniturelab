@@ -145,7 +145,10 @@ export function OrderCard({ order, onBuyAgain, onContactSeller }: OrderCardProps
               <Image
                 src={item.product?.images?.[0] || '/placeholder.png'}
                 alt={item.product?.name || 'Product'}
+                width={112}
+                height={112}
                 className="w-full sm:w-28 h-48 sm:h-28 object-cover rounded-lg shadow-sm"
+                unoptimized={item.product?.images?.[0]?.startsWith('https://res.cloudinary.com')}
               />
               <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
                 <div className="flex-1">

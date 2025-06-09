@@ -145,6 +145,7 @@ export default function CartPage() {
                       alt={item.product.name}
                       fill
                       className="object-contain rounded-lg"
+                      unoptimized={item.product.images[0]?.startsWith('https://res.cloudinary.com')}
                     />
                   </div>
                   <div className="flex-grow">

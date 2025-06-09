@@ -10,12 +10,17 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'upload.wikimedia.org',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
     ],
     domains: [
       'www.mandiri.co.id',
       'www.bni.co.id',
       'upload.wikimedia.org',
-      'lh3.googleusercontent.com'
+      'lh3.googleusercontent.com',
+      'res.cloudinary.com'
     ],
   },
 }

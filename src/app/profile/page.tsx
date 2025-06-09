@@ -163,6 +163,7 @@ export default function ProfilePage() {
                     alt="Profile"
                     fill
                     className="object-cover"
+                    unoptimized={session.user?.image?.startsWith('https://res.cloudinary.com')}
                   />
                 </div>
                 <div className="mt-6 text-center">
