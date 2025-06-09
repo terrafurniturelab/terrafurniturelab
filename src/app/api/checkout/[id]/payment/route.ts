@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -7,32 +7,34 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const { id } = await params;
+    
     if (!session?.user?.id) {
       console.log('No session or user ID found');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     console.log('Checking checkout:', {
-      checkoutId: params.id,
+      checkoutId: id,
       userId: session.user.id
     });
 
     // Verify checkout exists and belongs to user
     const existingCheckout = await prisma.checkout.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
     });
 
     if (!existingCheckout) {
       console.log('Checkout not found:', {
-        checkoutId: params.id,
+        checkoutId: id,
         userId: session.user.id
       });
       return NextResponse.json(
@@ -101,7 +103,7 @@ export async function POST(
       // Update checkout with payment proof
       const checkout = await prisma.checkout.update({
         where: {
-          id: params.id,
+          id,
         },
         data: {
           paymentProof: `/uploads/payments/${filename}`,
