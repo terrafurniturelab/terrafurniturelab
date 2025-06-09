@@ -221,7 +221,7 @@ export default function Navbar() {
                     }`}
                   >
                     <div className="relative">
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden ring-4 ring-[#472D2D]/10 mr-2">
+                      <div className="relative w-40 h-40 rounded-full overflow-hidden ring-4 ring-[#472D2D]/10 mr-2">
                         <Image
                           src={session.user?.image || "/user.png"}
                           alt="Profile"
