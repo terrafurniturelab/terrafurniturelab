@@ -31,13 +31,15 @@ export default function ProductCard(product: Product) {
 
   return (
     <div className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
-      <div className="relative h-32 sm:h-64 w-full overflow-hidden">
+      <div className="relative aspect-square w-full overflow-hidden">
         <Link href={`/products/${product.id}`}>
           <Image
             src={product.images[0] || '/placeholder.png'}
             alt={product.name}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
+            priority={false}
           />
         </Link>
       </div>
