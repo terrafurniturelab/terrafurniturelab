@@ -57,7 +57,16 @@ export default function FeaturedFeedbacks() {
   }
 
   if (feedbacks.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-12">
+        <div className="bg-white p-8 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Belum Ada Feedback</h3>
+          <p className="text-gray-500">
+            Jadilah yang pertama untuk memberikan feedback dan pengalaman Anda dengan Furniture Lab.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

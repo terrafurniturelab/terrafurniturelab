@@ -10,7 +10,10 @@ async function getFeaturedProducts() {
     // Use absolute URL for server-side fetch
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const res = await fetch(`${baseUrl}/api/products?limit=4&sort=createdAt:desc`, { 
-      next: { revalidate: 3600 } // Revalidate every hour
+      cache: 'no-store', // Disable caching to always get fresh data
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
     });
     if (!res.ok) {
       throw new Error('Failed to fetch products');
