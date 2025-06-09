@@ -40,7 +40,9 @@ export async function middleware(request: NextRequest) {
 
   // If user is not logged in and trying to access protected pages
   if (!token && (isProfilePage || isCartPage || isOrdersPage || isCheckoutPage || isFeedbackPage)) {
-    return new NextResponse(null, { status: 404 });
+    // Store the intended destination
+    const callbackUrl = encodeURIComponent(request.nextUrl.pathname);
+    return NextResponse.redirect(new URL(`/login?callbackUrl=${callbackUrl}`, request.url));
   }
 
   // If user is logged in and trying to access auth pages
