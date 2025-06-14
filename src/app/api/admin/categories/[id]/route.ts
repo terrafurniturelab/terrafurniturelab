@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
 
 // PUT /api/admin/categories/[id]
 export async function PUT(
@@ -66,10 +67,28 @@ export async function DELETE(
 ) {
   try {
     const cookieStore = await cookies();
-    const isAuthenticated = cookieStore.has('adminAuthenticated');
+    const token = cookieStore.get('adminToken');
 
-    if (!isAuthenticated) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token.value, process.env.JWT_SECRET || 'your-secret-key') as { id: string };
+
+    // Verify admin exists
+    const admin = await prisma.admin.findUnique({
+      where: { id: decoded.id },
+    });
+
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'Admin not found' },
+        { status: 404 }
+      );
     }
 
     // Await params since it's now a Promise
@@ -84,13 +103,16 @@ export async function DELETE(
     });
 
     if (!existingCategory) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Kategori tidak ditemukan' },
+        { status: 404 }
+      );
     }
 
     // Check if category has products
     if (existingCategory.products.length > 0) {
       return NextResponse.json(
-        { error: 'Cannot delete category with associated products' },
+        { error: 'Tidak dapat menghapus kategori yang memiliki produk' },
         { status: 400 }
       );
     }
@@ -99,9 +121,18 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ message: 'Category deleted successfully' });
+    return NextResponse.json({ message: 'Kategori berhasil dihapus' });
   } catch (error) {
     console.error('Error deleting category:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json(
+        { error: 'Token tidak valid' },
+        { status: 401 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan saat menghapus kategori' },
+      { status: 500 }
+    );
   }
 }

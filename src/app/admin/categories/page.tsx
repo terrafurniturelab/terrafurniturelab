@@ -80,11 +80,17 @@ export default function CategoriesPage() {
         method: 'DELETE',
       });
 
-      if (!response.ok) throw new Error('Failed to delete category');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal menghapus kategori');
+      }
 
       await fetchCategories();
+      alert('Kategori berhasil dihapus');
     } catch (error) {
       console.error('Error deleting category:', error);
+      alert(error instanceof Error ? error.message : 'Gagal menghapus kategori');
     } finally {
       setIsLoading(false);
     }
