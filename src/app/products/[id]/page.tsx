@@ -55,12 +55,23 @@ export default function ProductDetailPage() {
       try {
         setGlobalIsLoading(true);
         setError(null);
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL2 || process.env.NEXT_PUBLIC_BASE_URL3 || 'http://localhost:3000';
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        console.log('Fetching from:', `${baseUrl}/api/products/${params.id}`);
         const res = await fetch(`${baseUrl}/api/products/${params.id}`, { 
           cache: 'no-store',
-          next: { revalidate: 60 } // Revalidate every 60 seconds
+          next: { revalidate: 60 }, // Revalidate every 60 seconds
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
         });
-        if (!res.ok) throw new Error('Failed to fetch product');
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to fetch product');
+        }
+        
         const data = await res.json();
         setProduct(data);
       } catch (error) {
