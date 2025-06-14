@@ -10,7 +10,7 @@ export default function Banner() {
     <div className="relative bg-[#472D2D] mt-16">
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold text-white">
               {content.banner.hero.title}
@@ -27,11 +27,12 @@ export default function Banner() {
               </Link>
             </div>
           </div>
-          <div className="relative sm:h-[400px] h-[250px]">
+          <div className="relative sm:h-[250px] h-[250px]">
             <Image
-              src="/banner-image.jpg"
+              src="/banner.jpg"
               alt={content.banner.hero.title}
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover rounded-lg"
               priority
             />

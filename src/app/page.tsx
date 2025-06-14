@@ -9,16 +9,33 @@ async function getFeaturedProducts() {
   try {
     // Use absolute URL for server-side fetch
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/products?limit=4&sort=createdAt:desc`, { 
+    console.log('Fetching from:', `${baseUrl}/api/products?limit=4`);
+    
+    const res = await fetch(`${baseUrl}/api/products?limit=4`, { 
       next: { 
         revalidate: 60 // Revalidate every 60 seconds
       }
     });
+
     if (!res.ok) {
-      throw new Error('Failed to fetch products');
+      const errorData = await res.json().catch(() => null);
+      console.error('API Response not OK:', {
+        status: res.status,
+        statusText: res.statusText,
+        errorData
+      });
+      throw new Error(`Failed to fetch products: ${res.status} ${res.statusText}`);
     }
+
     const products = await res.json();
-    return Array.isArray(products) ? products.slice(0, 4) : [];
+    console.log('Fetched products:', products);
+    
+    if (!Array.isArray(products)) {
+      console.error('Products is not an array:', products);
+      return [];
+    }
+
+    return products.slice(0, 4);
   } catch (error) {
     console.error('Error fetching featured products:', error);
     return [];

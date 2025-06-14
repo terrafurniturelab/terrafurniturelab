@@ -4,7 +4,6 @@
     "navigation": {
       "home": "Beranda",
       "products": "Produk",
-      "categories": "Kategori",
       "feedback": "Feedback"
     },
     "userMenu": {
@@ -44,13 +43,14 @@
   },
   "footer": {
     "company": {
-      "description": "Transformasi ruangan Anda dengan koleksi furniture premium kami."
+      "description": "Transformasi ruangan Anda dengan koleksi furniture premium kami.",
+      "instagram": "@terra.furniture",
+      "instagramLink": "https://www.instagram.com/terra.furniture/"
     },
     "quickLinks": {
       "title": "Tautan Cepat",
       "links": {
         "products": "Produk",
-        "categories": "Kategori",
         "about": "Tentang Kami",
         "contact": "Kontak"
       }

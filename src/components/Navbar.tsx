@@ -378,20 +378,6 @@ export default function Navbar() {
               {content.navbar.navigation.products}
             </Link>
             <Link 
-              href="/categories" 
-              className={`block px-3 py-2 transition-colors duration-300 ${
-                isScrolled 
-                  ? isActive('/categories')
-                    ? 'bg-coklat-terang text-coklat-tua font-semibold'
-                    : 'text-gray-700 hover:text-coklat-muda hover:bg-coklat-terang'
-                  : isActive('/categories')
-                    ? 'bg-white/10 text-white font-semibold'
-                    : 'text-white hover:text-coklat-terang'
-              }`}
-            >
-              {content.navbar.navigation.categories}
-            </Link>
-            <Link 
               href="/feedback" 
               className={`block px-3 py-2 transition-colors duration-300 ${
                 isScrolled 
