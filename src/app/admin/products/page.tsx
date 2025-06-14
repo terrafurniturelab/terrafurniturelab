@@ -131,7 +131,7 @@ export default function ProductsPage() {
       });
 
       // Append new image files
-      imageFiles.forEach((file, index) => {
+      imageFiles.forEach((file) => {
         formDataToSend.append(`newImages`, file);
       });
       
