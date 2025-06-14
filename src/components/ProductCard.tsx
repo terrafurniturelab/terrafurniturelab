@@ -68,7 +68,7 @@ export default function ProductCard(product: Product) {
               ))}
             </div>
             <span className="text-xs sm:text-sm text-gray-600">
-              ({product.reviewCount})
+              {product.rating} ({product.reviewCount} ulasan)
             </span>
           </div>
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
