@@ -55,7 +55,7 @@ export default function ProductDetailPage() {
       try {
         setGlobalIsLoading(true);
         setError(null);
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL2 || 'http://localhost:3000';
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL2 || process.env.NEXT_PUBLIC_BASE_URL3 || 'http://localhost:3000';
         const res = await fetch(`${baseUrl}/api/products/${params.id}`, { 
           cache: 'no-store',
           next: { revalidate: 60 } // Revalidate every 60 seconds
@@ -111,7 +111,7 @@ export default function ProductDetailPage() {
     }
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL2 || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_BASE_URL2 || process.env.NEXT_PUBLIC_BASE_URL3 || 'http://localhost:3000';
       const response = await fetch(`${baseUrl}/api/cart`, {
         method: 'POST',
         headers: {
