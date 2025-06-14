@@ -22,6 +22,12 @@ export default function EditProfilePage() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [errors, setErrors] = useState({
+    name: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('/user.png');
   const [showLoadingScreen, setShowLoadingScreen] = useState(false);
@@ -60,8 +66,60 @@ export default function EditProfilePage() {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {
+      name: '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    };
+    let isValid = true;
+
+    // Validasi nama
+    if (!formData.name.trim()) {
+      newErrors.name = 'Nama tidak boleh kosong';
+      isValid = false;
+    } else if (formData.name.length < 3) {
+      newErrors.name = 'Nama minimal 3 karakter';
+      isValid = false;
+    }
+
+    // Validasi password jika ada yang diisi
+    if (formData.currentPassword || formData.newPassword || formData.confirmPassword) {
+      if (!formData.currentPassword) {
+        newErrors.currentPassword = 'Password saat ini harus diisi';
+        isValid = false;
+      }
+
+      if (!formData.newPassword) {
+        newErrors.newPassword = 'Password baru harus diisi';
+        isValid = false;
+      } else if (formData.newPassword.length < 6) {
+        newErrors.newPassword = 'Password baru minimal 6 karakter';
+        isValid = false;
+      }
+
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Konfirmasi password harus diisi';
+        isValid = false;
+      } else if (formData.newPassword !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Password tidak cocok';
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error('Mohon periksa kembali form Anda');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -73,16 +131,6 @@ export default function EditProfilePage() {
       }
 
       if (formData.currentPassword && formData.newPassword) {
-        if (formData.newPassword !== formData.confirmPassword) {
-          toast.error('Password baru tidak cocok');
-          setIsLoading(false);
-          return;
-        }
-        if (formData.newPassword.length < 6) {
-          toast.error('Password baru minimal 6 karakter');
-          setIsLoading(false);
-          return;
-        }
         formDataToSend.append('currentPassword', formData.currentPassword);
         formDataToSend.append('newPassword', formData.newPassword);
       }
@@ -192,10 +240,16 @@ export default function EditProfilePage() {
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      setErrors(prev => ({ ...prev, name: '' }));
+                    }}
                     required
-                    className="border-[#472D2D]/20 focus:border-[#472D2D]"
+                    className={`border-[#472D2D]/20 focus:border-[#472D2D] ${errors.name ? 'border-red-500' : ''}`}
                   />
+                  {errors.name && (
+                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                  )}
                 </div>
 
                 <div className="pt-4 border-t border-gray-100">
@@ -207,9 +261,15 @@ export default function EditProfilePage() {
                         id="currentPassword"
                         type="password"
                         value={formData.currentPassword}
-                        onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                        className="border-[#472D2D]/20 focus:border-[#472D2D]"
+                        onChange={(e) => {
+                          setFormData({ ...formData, currentPassword: e.target.value });
+                          setErrors(prev => ({ ...prev, currentPassword: '' }));
+                        }}
+                        className={`border-[#472D2D]/20 focus:border-[#472D2D] ${errors.currentPassword ? 'border-red-500' : ''}`}
                       />
+                      {errors.currentPassword && (
+                        <p className="text-red-500 text-sm mt-1">{errors.currentPassword}</p>
+                      )}
                     </div>
 
                     <div>
@@ -218,9 +278,15 @@ export default function EditProfilePage() {
                         id="newPassword"
                         type="password"
                         value={formData.newPassword}
-                        onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                        className="border-[#472D2D]/20 focus:border-[#472D2D]"
+                        onChange={(e) => {
+                          setFormData({ ...formData, newPassword: e.target.value });
+                          setErrors(prev => ({ ...prev, newPassword: '' }));
+                        }}
+                        className={`border-[#472D2D]/20 focus:border-[#472D2D] ${errors.newPassword ? 'border-red-500' : ''}`}
                       />
+                      {errors.newPassword && (
+                        <p className="text-red-500 text-sm mt-1">{errors.newPassword}</p>
+                      )}
                     </div>
 
                     <div>
@@ -229,9 +295,15 @@ export default function EditProfilePage() {
                         id="confirmPassword"
                         type="password"
                         value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                        className="border-[#472D2D]/20 focus:border-[#472D2D]"
+                        onChange={(e) => {
+                          setFormData({ ...formData, confirmPassword: e.target.value });
+                          setErrors(prev => ({ ...prev, confirmPassword: '' }));
+                        }}
+                        className={`border-[#472D2D]/20 focus:border-[#472D2D] ${errors.confirmPassword ? 'border-red-500' : ''}`}
                       />
+                      {errors.confirmPassword && (
+                        <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                      )}
                     </div>
                   </div>
                 </div>
