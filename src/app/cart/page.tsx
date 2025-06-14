@@ -59,7 +59,7 @@ export default function CartPage() {
 
   const handleRemoveItem = async (itemId: string) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000' || process.env.NEXT_PUBLIC_BASE_URL2;
       const response = await fetch(`${baseUrl}/api/cart/${itemId}`, {
         method: 'DELETE',
       });
