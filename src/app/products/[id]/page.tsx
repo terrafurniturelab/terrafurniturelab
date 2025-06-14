@@ -55,7 +55,7 @@ export default function ProductDetailPage() {
       try {
         setGlobalIsLoading(true);
         setError(null);
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000' || process.env.NEXT_PUBLIC_BASE_URL2;
         const res = await fetch(`${baseUrl}/api/products/${params.id}`, { 
           cache: 'no-store',
           next: { revalidate: 60 } // Revalidate every 60 seconds

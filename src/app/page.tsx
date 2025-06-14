@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 async function getFeaturedProducts() {
   try {
     // Use absolute URL for server-side fetch
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000' || process.env.NEXT_PUBLIC_BASE_URL2;
     console.log('Fetching from:', `${baseUrl}/api/products?limit=4`);
     
     const res = await fetch(`${baseUrl}/api/products?limit=4`, { 
