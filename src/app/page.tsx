@@ -48,8 +48,15 @@ export default async function Home() {
     <main className="min-h-screen">
       <Navbar />
       <Banner />
-      {/* Featured Products Section */}
-      <ProductGrid title="Produk Terbaru" products={featuredProducts} />
+
+      {featuredProducts.length > 0 ? (
+        <ProductGrid title="Produk Terbaru" products={featuredProducts} />
+      ) : (
+        <div className="py-24 text-center">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Belum Ada Produk</h2>
+          <p className="text-gray-600">Mohon maaf, saat ini belum ada produk yang tersedia.</p>
+        </div>
+      )}
       
       {/* Testimonials Section */}
       <section className="bg-gray-50 py-24">
