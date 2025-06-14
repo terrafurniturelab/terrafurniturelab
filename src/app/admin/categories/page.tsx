@@ -54,12 +54,18 @@ export default function CategoriesPage() {
         body: JSON.stringify({ name: categoryName }),
       });
 
-      if (!response.ok) throw new Error('Failed to save category');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal menyimpan kategori');
+      }
 
       await fetchCategories();
       handleCloseModal();
+      alert(editingCategory ? 'Kategori berhasil diperbarui' : 'Kategori berhasil ditambahkan');
     } catch (error) {
       console.error('Error saving category:', error);
+      alert(error instanceof Error ? error.message : 'Gagal menyimpan kategori');
     } finally {
       setIsLoading(false);
     }

@@ -89,52 +89,69 @@ export default function ProductsPage() {
     e.preventDefault();
     try {
       setIsLoading(true);
+      setError(null);
 
-      // Handle image uploads first
-      let imageUrls = [...formData.images];
-      if (imageFiles.length > 0) {
-        const uploadPromises = imageFiles.map(async (file) => {
-          const formData = new FormData();
-          formData.append('file', file);
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          if (!response.ok) throw new Error('Failed to upload image');
-          const data = await response.json();
-          return data.url;
-        });
-
-        const newImageUrls = await Promise.all(uploadPromises);
-        imageUrls = [...imageUrls, ...newImageUrls];
+      // Validate form data
+      if (!formData.name.trim()) {
+        throw new Error('Nama produk harus diisi');
       }
-
-      const productData = {
-        ...formData,
-        images: imageUrls,
-      };
+      if (!formData.description.trim()) {
+        throw new Error('Deskripsi produk harus diisi');
+      }
+      if (formData.stock < 0) {
+        throw new Error('Stok tidak boleh negatif');
+      }
+      if (formData.price <= 0) {
+        throw new Error('Harga harus lebih dari 0');
+      }
+      if (!formData.categoryId) {
+        throw new Error('Kategori harus dipilih');
+      }
+      if (!editingProduct && formData.images.length === 0 && imageFiles.length === 0) {
+        throw new Error('Produk harus memiliki minimal 1 gambar');
+      }
 
       const url = editingProduct 
         ? `/api/admin/products/${editingProduct.id}`
         : '/api/admin/products';
       
       const method = editingProduct ? 'PUT' : 'POST';
+
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('stock', formData.stock.toString());
+      formDataToSend.append('price', formData.price.toString());
+      formDataToSend.append('categoryId', formData.categoryId);
+      
+      // Append existing images
+      formData.images.forEach((image, index) => {
+        formDataToSend.append(`images[${index}]`, image);
+      });
+
+      // Append new image files
+      imageFiles.forEach((file, index) => {
+        formDataToSend.append(`newImages`, file);
+      });
       
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(productData),
+        body: formDataToSend,
       });
 
-      if (!response.ok) throw new Error('Failed to save product');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal menyimpan produk');
+      }
 
       await fetchProducts();
       handleCloseModal();
+      alert(editingProduct ? 'Produk berhasil diperbarui' : 'Produk berhasil ditambahkan');
     } catch (error) {
       console.error('Error saving product:', error);
-      setError('Gagal menyimpan produk. Pastikan semua data valid dan server menyimpan aktif.');
+      setError(error instanceof Error ? error.message : 'Gagal menyimpan produk');
     } finally {
       setIsLoading(false);
     }

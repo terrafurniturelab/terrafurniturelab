@@ -10,10 +10,28 @@ export async function PUT(
 ) {
   try {
     const cookieStore = await cookies();
-    const isAuthenticated = cookieStore.has('adminAuthenticated');
+    const token = cookieStore.get('adminToken');
 
-    if (!isAuthenticated) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token.value, process.env.JWT_SECRET || 'your-secret-key') as { id: string };
+
+    // Verify admin exists
+    const admin = await prisma.admin.findUnique({
+      where: { id: decoded.id },
+    });
+
+    if (!admin) {
+      return NextResponse.json(
+        { error: 'Admin tidak ditemukan' },
+        { status: 404 }
+      );
     }
 
     // Await params since it's now a Promise
@@ -21,7 +39,17 @@ export async function PUT(
     const { name } = await request.json();
 
     if (!name) {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Nama kategori harus diisi' },
+        { status: 400 }
+      );
+    }
+
+    if (name.trim().length < 2) {
+      return NextResponse.json(
+        { error: 'Nama kategori minimal 2 karakter' },
+        { status: 400 }
+      );
     }
 
     // Check if category exists
@@ -30,7 +58,10 @@ export async function PUT(
     });
 
     if (!existingCategory) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Kategori tidak ditemukan' },
+        { status: 404 }
+      );
     }
 
     // Check if another category with same name exists
@@ -43,7 +74,7 @@ export async function PUT(
 
     if (duplicateCategory) {
       return NextResponse.json(
-        { error: 'Category with this name already exists' },
+        { error: 'Kategori dengan nama ini sudah ada' },
         { status: 400 }
       );
     }
@@ -56,7 +87,16 @@ export async function PUT(
     return NextResponse.json(category);
   } catch (error) {
     console.error('Error updating category:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json(
+        { error: 'Token tidak valid' },
+        { status: 401 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan saat memperbarui kategori' },
+      { status: 500 }
+    );
   }
 }
 
