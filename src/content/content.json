@@ -51,8 +51,7 @@
       "title": "Tautan Cepat",
       "links": {
         "products": "Produk",
-        "about": "Tentang Kami",
-        "contact": "Kontak"
+        "feedbacks": "Feedback"
       }
     },
     "customerService": {
