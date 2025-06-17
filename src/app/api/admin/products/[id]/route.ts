@@ -45,6 +45,16 @@ export async function PUT(
     const images = formData.getAll('images[]') as string[];
     const newImages = formData.getAll('newImages') as File[];
 
+    console.log('Received form data:', {
+      name,
+      description,
+      stock,
+      price,
+      categoryId,
+      existingImages: images.length,
+      newImages: newImages.length
+    });
+
     // Validate required fields
     if (!name?.trim()) {
       return NextResponse.json(
@@ -107,24 +117,45 @@ export async function PUT(
 
     // Handle image uploads
     let finalImages = [...images];
+    
     if (newImages.length > 0) {
-      const uploadPromises = newImages.map(async (file) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
+      try {
+        const uploadPromises = newImages.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          // Use absolute URL for production
+          const uploadUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://www.terrafurniturelab.shop/api/upload'
+            : '/api/upload';
+            
+          const response = await fetch(uploadUrl, {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Gagal mengunggah gambar');
+          }
+          
+          const data = await response.json();
+          return data.url;
         });
-        if (!response.ok) throw new Error('Gagal mengunggah gambar');
-        const data = await response.json();
-        return data.url;
-      });
 
-      const newImageUrls = await Promise.all(uploadPromises);
-      finalImages = [...finalImages, ...newImageUrls];
+        const newImageUrls = await Promise.all(uploadPromises);
+        finalImages = [...finalImages, ...newImageUrls];
+      } catch (uploadError) {
+        console.error('Error during image upload:', uploadError);
+        return NextResponse.json(
+          { error: 'Gagal mengunggah gambar: ' + (uploadError as Error).message },
+          { status: 500 }
+        );
+      }
     }
 
-    if (finalImages.length === 0) {
+    // Only validate total images if this is a new product
+    if (!existingProduct && finalImages.length === 0) {
       return NextResponse.json(
         { error: 'Produk harus memiliki minimal 1 gambar' },
         { status: 400 }
@@ -138,7 +169,7 @@ export async function PUT(
         description,
         stock,
         price,
-        images: finalImages,
+        images: finalImages.length > 0 ? finalImages : undefined, // Only update images if new ones are provided
         categoryId,
       },
       include: {
@@ -146,6 +177,7 @@ export async function PUT(
       },
     });
 
+    console.log('Successfully updated product:', product);
     return NextResponse.json(product);
   } catch (error) {
     console.error('Error updating product:', error);
@@ -156,7 +188,7 @@ export async function PUT(
       );
     }
     return NextResponse.json(
-      { error: 'Terjadi kesalahan saat memperbarui produk' },
+      { error: 'Terjadi kesalahan saat memperbarui produk: ' + (error as Error).message },
       { status: 500 }
     );
   }
