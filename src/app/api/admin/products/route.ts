@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import jwt from 'jsonwebtoken';
 
 export async function GET() {
   try {
@@ -36,7 +37,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('adminToken');
@@ -48,27 +49,62 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get admin from token
-    const admin = await prisma.admin.findFirst({
-      where: {
-        // You might want to add a proper token verification here
-        // For now, we'll just get the first admin
-      },
+    // Verify token
+    const decoded = jwt.verify(token.value, process.env.JWT_SECRET || 'your-secret-key') as { id: string };
+
+    // Verify admin exists
+    const admin = await prisma.admin.findUnique({
+      where: { id: decoded.id },
     });
 
     if (!admin) {
       return NextResponse.json(
-        { error: 'Admin not found' },
+        { error: 'Admin tidak ditemukan' },
         { status: 404 }
       );
     }
 
-    const body = await request.json();
-    const { name, images, description, stock, price, categoryId } = body;
+    const formData = await request.formData();
 
-    if (!name || !images || !description || stock === undefined || price === undefined || !categoryId) {
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const stock = parseInt(formData.get('stock') as string);
+    const price = parseInt(formData.get('price') as string);
+    const categoryId = formData.get('categoryId') as string;
+    const newImages = formData.getAll('newImages') as File[];
+
+    // Validate required fields
+    if (!name?.trim()) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Nama produk harus diisi' },
+        { status: 400 }
+      );
+    }
+
+    if (!description?.trim()) {
+      return NextResponse.json(
+        { error: 'Deskripsi produk harus diisi' },
+        { status: 400 }
+      );
+    }
+
+    if (isNaN(stock) || stock < 0) {
+      return NextResponse.json(
+        { error: 'Stok tidak valid' },
+        { status: 400 }
+      );
+    }
+
+    if (isNaN(price) || price <= 0) {
+      return NextResponse.json(
+        { error: 'Harga harus lebih dari 0' },
+        { status: 400 }
+      );
+    }
+
+    if (!categoryId) {
+      return NextResponse.json(
+        { error: 'Kategori harus dipilih' },
         { status: 400 }
       );
     }
@@ -80,20 +116,40 @@ export async function POST(request: Request) {
 
     if (!category) {
       return NextResponse.json(
-        { error: 'Category not found' },
+        { error: 'Kategori tidak ditemukan' },
         { status: 404 }
       );
     }
 
+    // Handle image uploads
+    if (newImages.length === 0) {
+      return NextResponse.json(
+        { error: 'Produk harus memiliki minimal 1 gambar' },
+        { status: 400 }
+      );
+    }
+
+    const uploadPromises = newImages.map(async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) throw new Error('Gagal mengunggah gambar');
+      const data = await response.json();
+      return data.url;
+    });
+
+    const imageUrls = await Promise.all(uploadPromises);
+
     const product = await prisma.product.create({
       data: {
         name,
-        images,
         description,
         stock,
         price,
-        rating: 5, // Default rating
-        reviewCount: 0, // Default review count
+        images: imageUrls,
         categoryId,
         adminId: admin.id,
       },
@@ -105,8 +161,14 @@ export async function POST(request: Request) {
     return NextResponse.json(product);
   } catch (error) {
     console.error('Error creating product:', error);
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json(
+        { error: 'Token tidak valid' },
+        { status: 401 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Terjadi kesalahan saat membuat produk' },
       { status: 500 }
     );
   }
