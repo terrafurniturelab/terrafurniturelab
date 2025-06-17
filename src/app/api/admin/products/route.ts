@@ -73,6 +73,15 @@ export async function POST(request: NextRequest) {
     const categoryId = formData.get('categoryId') as string;
     const newImages = formData.getAll('newImages') as File[];
 
+    console.log('Received form data:', {
+      name,
+      description,
+      stock,
+      price,
+      categoryId,
+      imageCount: newImages.length
+    });
+
     // Validate required fields
     if (!name?.trim()) {
       return NextResponse.json(
@@ -129,36 +138,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const uploadPromises = newImages.map(async (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
+    try {
+      const uploadPromises = newImages.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Use absolute URL for production
+        const uploadUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://www.terrafurniturelab.shop/api/upload'
+          : '/api/upload';
+          
+        const response = await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Gagal mengunggah gambar');
+        }
+        
+        const data = await response.json();
+        return data.url;
       });
-      if (!response.ok) throw new Error('Gagal mengunggah gambar');
-      const data = await response.json();
-      return data.url;
-    });
 
-    const imageUrls = await Promise.all(uploadPromises);
+      const imageUrls = await Promise.all(uploadPromises);
+      console.log('Successfully uploaded images:', imageUrls);
 
-    const product = await prisma.product.create({
-      data: {
-        name,
-        description,
-        stock,
-        price,
-        images: imageUrls,
-        categoryId,
-        adminId: admin.id,
-      },
-      include: {
-        category: true,
-      },
-    });
+      const product = await prisma.product.create({
+        data: {
+          name,
+          description,
+          stock,
+          price,
+          images: imageUrls,
+          categoryId,
+          adminId: admin.id,
+        },
+        include: {
+          category: true,
+        },
+      });
 
-    return NextResponse.json(product);
+      console.log('Successfully created product:', product);
+      return NextResponse.json(product);
+      
+    } catch (uploadError) {
+      console.error('Error during image upload:', uploadError);
+      return NextResponse.json(
+        { error: 'Gagal mengunggah gambar: ' + (uploadError as Error).message },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Error creating product:', error);
     if (error instanceof jwt.JsonWebTokenError) {
@@ -168,7 +199,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: 'Terjadi kesalahan saat membuat produk' },
+      { error: 'Terjadi kesalahan saat membuat produk: ' + (error as Error).message },
       { status: 500 }
     );
   }
