@@ -267,7 +267,7 @@ export default function ProductDetailPage() {
             </button>
           </div>
           <div className="w-full overflow-x-auto pb-4 -mb-4">
-            <div className="flex gap-2 w-[1280px] xl:w-[1024px] lg:w-[768px] md:w-[640px] sm:w-[480px]">
+            <div className="flex gap-2 w-[480px]">
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
